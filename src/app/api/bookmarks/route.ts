@@ -3,9 +3,14 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { getServiceClient } from '@/lib/supabase'
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function getUserId(session: any): string | null {
+  return session?.user?.id ?? null
+}
+
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions)
-  const userId = (session?.user as { id?: string } | undefined)?.id
+  const userId = getUserId(session)
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { mangaId, mangaTitle, coverUrl, mangaStatus } = await req.json()
@@ -25,7 +30,7 @@ export async function POST(req: Request) {
 
 export async function DELETE(req: Request) {
   const session = await getServerSession(authOptions)
-  const userId = (session?.user as { id?: string } | undefined)?.id
+  const userId = getUserId(session)
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { mangaId } = await req.json()
