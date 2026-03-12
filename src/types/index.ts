@@ -106,3 +106,34 @@ export interface ReadProgressRow {
   chapter_num: string
   updated_at: string
 }
+
+// ── Consumet Types ──
+export interface ConsumetSearchResult {
+  id: string
+  title: string
+  image: string
+  headerForImage?: Record<string, string>
+}
+
+export interface ConsumetChapter {
+  id: string
+  title: string
+  releaseDate?: string
+}
+
+export interface ConsumetManga {
+  id: string
+  title: string
+  image: string
+  description?: string
+  genres?: string[]
+  status?: string
+  chapters: ConsumetChapter[]
+  headerForImage?: Record<string, string>
+}
+
+export interface ConsumetChapterPage {
+  img: string
+  page: number
+  headerForImage?: Record<string, string>
+}
