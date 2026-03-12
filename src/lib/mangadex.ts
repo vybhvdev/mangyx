@@ -63,14 +63,13 @@ export async function searchManga(query: string, limit = 24): Promise<Manga[]> {
     limit: String(limit),
     'includes[]': ['cover_art'],
     'contentRating[]': ['safe', 'suggestive'],
-    'order[followedCount]': 'desc',
+    'availableTranslatedLanguage[]': ['en'],
   }
   if (query.trim()) {
     params.title = query.trim()
     params['order[relevance]'] = 'desc'
-    delete params['order[followedCount]']
   } else {
-    params['availableTranslatedLanguage[]'] = ['en']
+    params['order[followedCount]'] = 'desc'
   }
   const d = await get<MangaDexListResponse<Manga>>('/manga', params)
   return d.data
@@ -81,7 +80,11 @@ export async function getMangaById(id: string): Promise<Manga> {
   return d.data
 }
 
-export async function getMangaFeed(mangaId: string, limit = 40, offset = 0): Promise<{ chapters: Chapter[]; total: number }> {
+export async function getMangaFeed(
+  mangaId: string,
+  limit = 40,
+  offset = 0
+): Promise<{ chapters: Chapter[]; total: number }> {
   const d = await get<MangaDexListResponse<Chapter>>(`/manga/${mangaId}/feed`, {
     limit: String(limit),
     offset: String(offset),
@@ -90,7 +93,9 @@ export async function getMangaFeed(mangaId: string, limit = 40, offset = 0): Pro
     'includes[]': ['scanlation_group'],
     'contentRating[]': ['safe', 'suggestive'],
   })
-  const chapters = d.data.filter((c) => c.attributes.chapter !== null && !c.attributes.externalUrl)
+  const chapters = d.data.filter(
+    (c) => c.attributes.chapter !== null && !c.attributes.externalUrl
+  )
   return { chapters, total: d.total }
 }
 
@@ -99,14 +104,20 @@ export async function getChapterPages(chapterId: string): Promise<AtHomeResponse
 }
 
 export async function getMangaTags(): Promise<{ id: string; name: string }[]> {
-  const d = await get<{ data: { id: string; attributes: { name: { en: string }; group: string } }[] }>('/manga/tag')
+  const d = await get<{
+    data: { id: string; attributes: { name: { en: string }; group: string } }[]
+  }>('/manga/tag')
   return d.data
     .filter((t) => t.attributes.group === 'genre')
     .map((t) => ({ id: t.id, name: t.attributes.name.en }))
     .sort((a, b) => a.name.localeCompare(b.name))
 }
 
-export async function getRelatedManga(mangaId: string, tags: string[], limit = 6): Promise<Manga[]> {
+export async function getRelatedManga(
+  mangaId: string,
+  tags: string[],
+  limit = 6
+): Promise<Manga[]> {
   if (tags.length === 0) return getPopularManga(limit)
   const data = await get<MangaDexListResponse<Manga>>('/manga', {
     limit: String(limit + 1),
