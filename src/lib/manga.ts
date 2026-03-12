@@ -12,17 +12,6 @@ export interface UnifiedManga {
   description: string
   status: string
   tags: string[]
-  // raw data for source-specific pages
-  raw?: unknown
-}
-
-export interface UnifiedChapter {
-  id: string
-  source: MangaSource
-  mangaId: string
-  number: string
-  title: string
-  date?: string
 }
 
 export interface UnifiedPage {
@@ -30,10 +19,9 @@ export interface UnifiedPage {
   headers?: Record<string, string>
 }
 
-// Search both sources, MangaDex first
 export async function searchUnified(query: string): Promise<UnifiedManga[]> {
   const [mdResults, cResults] = await Promise.allSettled([
-    MangaDex.searchManga(query, 18),
+    MangaDex.searchManga(query, 12),
     query.trim() ? Consumet.searchManga(query) : Promise.resolve([]),
   ])
 
@@ -49,7 +37,9 @@ export async function searchUnified(query: string): Promise<UnifiedManga[]> {
       }))
     : []
 
-  const cManga: UnifiedManga[] = cResults.status === 'fulfilled'
+  // Only add Consumet results if there's a search query
+  // Show top 6 Consumet results always (even if same title — different source/chapters)
+  const cManga: UnifiedManga[] = cResults.status === 'fulfilled' && query.trim()
     ? (cResults.value as ConsumetSearchResult[])
         .slice(0, 6)
         .map((m) => ({
@@ -63,14 +53,9 @@ export async function searchUnified(query: string): Promise<UnifiedManga[]> {
         }))
     : []
 
-  // Deduplicate by title (avoid showing same manga twice)
-  const mdTitles = new Set(mdManga.map((m) => m.title.toLowerCase()))
-  const uniqueConsumet = cManga.filter((m) => !mdTitles.has(m.title.toLowerCase()))
-
-  return [...mdManga, ...uniqueConsumet]
+  return [...mdManga, ...cManga]
 }
 
-// Get chapter pages from either source
 export async function getPages(
   chapterId: string,
   source: MangaSource
@@ -79,8 +64,6 @@ export async function getPages(
     const pages = await Consumet.getChapterPages(chapterId)
     return pages.map((p) => ({ url: p.img, headers: p.headerForImage }))
   }
-
-  // MangaDex
   const atHome = await MangaDex.getChapterPages(chapterId)
   return atHome.chapter.data.map((p) => ({
     url: `${atHome.baseUrl}/data/${atHome.chapter.hash}/${p}`,
