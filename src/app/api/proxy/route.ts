@@ -5,10 +5,16 @@ export async function GET(req: Request) {
   const url = searchParams.get('url')
   if (!url) return new NextResponse('Missing url', { status: 400 })
 
+  const referer = url.includes('mangadex.org') || url.includes('uploads.mangadex')
+    ? 'https://mangadex.org'
+    : url.includes('mangahere')
+    ? 'https://mangahere.cc'
+    : 'https://mangakakalot.com'
+
   try {
     const res = await fetch(url, {
       headers: {
-        'Referer': 'https://mangakakalot.com',
+        'Referer': referer,
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
       },
     })

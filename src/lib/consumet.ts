@@ -1,6 +1,6 @@
 import type { ConsumetManga, ConsumetSearchResult, ConsumetChapterPage } from '@/types'
 
-const BASE = 'https://private-consumet-api.vercel.app/manga/mangakakalot'
+const BASE = 'https://private-consumet-api.vercel.app/manga/mangahere'
 
 async function fetcher<T>(path: string): Promise<T> {
   const res = await fetch(`${BASE}${path}`, { next: { revalidate: 3600 } })
