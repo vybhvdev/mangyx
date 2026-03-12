@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { getMangaById, getMangaFeed, getRelatedManga, getCoverUrl, getTitle, getDescription, getScanlationGroup } from '@/lib/mangadex'
 import { BookmarkButton } from '@/components/ui/BookmarkButton'
 import { MangaCard } from '@/components/ui/MangaCard'
@@ -9,9 +9,15 @@ import { fmtRelative } from '@/lib/utils'
 interface Props { params: { id: string } }
 
 export default async function MangaPage({ params }: Props) {
+  // Consumet IDs contain underscores and aren't UUIDs — redirect to consumet page
+  const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(params.id)
+  if (!isUUID) {
+    redirect(`/manga/consumet/${encodeURIComponent(params.id)}`)
+  }
+
   const [manga, { chapters, total }] = await Promise.all([
     getMangaById(params.id).catch(() => null),
-    getMangaFeed(params.id, 40, 0),
+    getMangaFeed(params.id, 40, 0).catch(() => ({ chapters: [], total: 0 })),
   ])
 
   if (!manga) notFound()
@@ -35,10 +41,7 @@ export default async function MangaPage({ params }: Props) {
     ?.map((t) => t.attributes.name.en)
     ?.join(' & ') ?? 'Similar'
 
-  const [related] = await Promise.all([
-    getRelatedManga(manga.id, genreTagIds, 6),
-  ])
-
+  const related = await getRelatedManga(manga.id, genreTagIds, 6).catch(() => [])
   const firstChapter = chapters[chapters.length - 1]
 
   return (
@@ -65,7 +68,9 @@ export default async function MangaPage({ params }: Props) {
           </p>
           <div className="flex gap-4 flex-wrap">
             {firstChapter ? (
-              <Link href={`/reader/${firstChapter.id}?manga=${manga.id}`} className="btn-primary">Start Reading</Link>
+              <Link href={`/reader/${firstChapter.id}?manga=${manga.id}`} className="btn-primary">
+                Start Reading
+              </Link>
             ) : (
               <button className="btn-primary opacity-50 cursor-not-allowed" disabled>No Chapters</button>
             )}

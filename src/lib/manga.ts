@@ -19,6 +19,20 @@ export interface UnifiedPage {
   headers?: Record<string, string>
 }
 
+function isDoujinshi(title: string): boolean {
+  const lower = title.toLowerCase()
+  return lower.includes(' dj') || lower.includes('dj -') || lower.includes('doujin')
+}
+
+function titleMatchScore(title: string, query: string): number {
+  const t = title.toLowerCase()
+  const q = query.toLowerCase()
+  if (t === q) return 3
+  if (t.startsWith(q)) return 2
+  if (t.includes(q)) return 1
+  return 0
+}
+
 export async function searchUnified(query: string): Promise<UnifiedManga[]> {
   const [mdResults, cResults] = await Promise.allSettled([
     MangaDex.searchManga(query, 12),
@@ -37,10 +51,13 @@ export async function searchUnified(query: string): Promise<UnifiedManga[]> {
       }))
     : []
 
-  // Only add Consumet results if there's a search query
-  // Show top 6 Consumet results always (even if same title — different source/chapters)
+  const mdTitles = new Set(mdManga.map((m) => m.title.toLowerCase()))
+
   const cManga: UnifiedManga[] = cResults.status === 'fulfilled' && query.trim()
     ? (cResults.value as ConsumetSearchResult[])
+        .filter((m) => !isDoujinshi(m.title))
+        .filter((m) => !mdTitles.has(m.title.toLowerCase()))
+        .sort((a, b) => titleMatchScore(b.title, query) - titleMatchScore(a.title, query))
         .slice(0, 6)
         .map((m) => ({
           id: m.id,
@@ -53,7 +70,11 @@ export async function searchUnified(query: string): Promise<UnifiedManga[]> {
         }))
     : []
 
-  return [...mdManga, ...cManga]
+  // Put best Consumet matches at top, rest at bottom
+  const topConsumet = cManga.filter((m) => titleMatchScore(m.title, query) >= 2)
+  const bottomConsumet = cManga.filter((m) => titleMatchScore(m.title, query) < 2)
+
+  return [...topConsumet, ...mdManga, ...bottomConsumet]
 }
 
 export async function getPages(
