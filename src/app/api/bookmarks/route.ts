@@ -5,13 +5,14 @@ import { getServiceClient } from '@/lib/supabase'
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions)
-  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const userId = (session?.user as { id?: string } | undefined)?.id
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { mangaId, mangaTitle, coverUrl, mangaStatus } = await req.json()
   const db = getServiceClient()
 
   const { error } = await db.from('bookmarks').upsert({
-    user_id: session.user.id,
+    user_id: userId,
     manga_id: mangaId,
     manga_title: mangaTitle,
     cover_url: coverUrl,
@@ -24,14 +25,15 @@ export async function POST(req: Request) {
 
 export async function DELETE(req: Request) {
   const session = await getServerSession(authOptions)
-  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const userId = (session?.user as { id?: string } | undefined)?.id
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { mangaId } = await req.json()
   const db = getServiceClient()
 
   const { error } = await db.from('bookmarks')
     .delete()
-    .eq('user_id', session.user.id)
+    .eq('user_id', userId)
     .eq('manga_id', mangaId)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
