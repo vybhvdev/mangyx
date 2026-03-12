@@ -8,8 +8,8 @@ export async function GET(req: Request) {
   try {
     const res = await fetch(url, {
       headers: {
-        'Referer': 'https://mangadex.org',
-        'User-Agent': 'Mozilla/5.0',
+        'Referer': 'https://mangakakalot.com',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
       },
     })
     if (!res.ok) return new NextResponse('Failed', { status: res.status })
@@ -21,6 +21,7 @@ export async function GET(req: Request) {
       headers: {
         'Content-Type': contentType,
         'Cache-Control': 'public, max-age=86400, immutable',
+        'Access-Control-Allow-Origin': '*',
       },
     })
   } catch {
