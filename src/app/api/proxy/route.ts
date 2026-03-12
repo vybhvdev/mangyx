@@ -9,7 +9,9 @@ export async function GET(req: Request) {
     ? 'https://mangadex.org'
     : url.includes('mangahere')
     ? 'https://mangahere.cc'
-    : 'https://mangakakalot.com'
+    : url.includes('mangapill') || url.includes('readdetectiveconan')
+    ? 'https://mangapill.com'
+    : 'https://mangapill.com'
 
   try {
     const res = await fetch(url, {

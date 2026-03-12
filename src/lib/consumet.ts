@@ -1,6 +1,6 @@
 import type { ConsumetManga, ConsumetSearchResult, ConsumetChapterPage } from '@/types'
 
-const BASE = 'https://private-consumet-api.vercel.app/manga/mangahere'
+const BASE = 'https://private-consumet-api.vercel.app/manga/mangapill'
 
 async function fetcher<T>(path: string): Promise<T> {
   const res = await fetch(`${BASE}${path}`, { next: { revalidate: 3600 } })
@@ -14,10 +14,12 @@ export async function searchManga(query: string): Promise<ConsumetSearchResult[]
 }
 
 export async function getMangaInfo(mangaId: string): Promise<ConsumetManga> {
-  return fetcher<ConsumetManga>(`/info?id=${mangaId}`)
+  return fetcher<ConsumetManga>(`/info?id=${encodeURIComponent(mangaId)}`)
 }
 
 export async function getChapterPages(chapterId: string): Promise<ConsumetChapterPage[]> {
-  const data = await fetcher<ConsumetChapterPage[] | { pages: ConsumetChapterPage[] }>(`/read?chapterId=${encodeURIComponent(chapterId)}`)
+  const data = await fetcher<ConsumetChapterPage[] | { pages: ConsumetChapterPage[] }>(
+    `/read?chapterId=${encodeURIComponent(chapterId)}`
+  )
   return Array.isArray(data) ? data : data.pages ?? []
 }
