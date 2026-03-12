@@ -21,7 +21,7 @@ export interface UnifiedPage {
 
 function isDoujinshi(title: string): boolean {
   const lower = title.toLowerCase()
-  return lower.includes(' dj') || lower.includes('dj -') || lower.includes('doujin')
+  return lower.includes("dj") || lower.includes("doujin") || lower.includes("fan book") || lower.includes("fanbook") || lower.includes("anthology") || lower.includes("comic anthology")
 }
 
 function titleMatchScore(title: string, query: string): number {

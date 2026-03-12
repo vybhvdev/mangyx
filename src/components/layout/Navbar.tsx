@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { DJToggle } from '@/components/ui/DJMode'
 import { usePathname, useRouter } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
 import { useState } from 'react'
@@ -24,9 +25,9 @@ export function Navbar() {
 
   return (
     <nav className="sticky top-0 z-50 bg-paper/95 backdrop-blur-sm border-b border-ink-200 px-8">
-      <div className="max-w-[1200px] mx-auto flex items-center gap-8 h-[60px]">
+      <div className="max-w-[1200px] mx-auto flex items-center gap-6 h-[60px]">
 
-        <Link href="/" className="font-syne font-black text-[1.1rem] tracking-[0.05em] text-onyx shrink-0">
+        <Link href="/" className="font-syne font-black text-[1.1rem] tracking-[0.05em] text-onyx shrink-0 wordmark">
           MANGYX
         </Link>
 
@@ -61,6 +62,9 @@ export function Navbar() {
                        focus:border-ink-300 focus:bg-paper placeholder:text-ink-400"
           />
         </div>
+
+        {/* DJ Mode toggle */}
+        <DJToggle />
 
         {/* Auth */}
         {session ? (
