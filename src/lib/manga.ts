@@ -51,12 +51,11 @@ export async function searchUnified(query: string): Promise<UnifiedManga[]> {
       }))
     : []
 
-  const mdTitles = new Set(mdManga.map((m) => m.title.toLowerCase()))
 
   const cManga: UnifiedManga[] = cResults.status === 'fulfilled' && query.trim()
     ? (cResults.value as ConsumetSearchResult[])
         .filter((m) => !isDoujinshi(m.title))
-        .filter((m) => !mdTitles.has(m.title.toLowerCase()))
+        
         .sort((a, b) => titleMatchScore(b.title, query) - titleMatchScore(a.title, query))
         .slice(0, 6)
         .map((m) => ({
