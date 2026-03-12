@@ -1,25 +1,30 @@
 'use client'
 
 import { createContext, useContext, useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 const DJContext = createContext<{ dj: boolean; toggle: () => void }>({ dj: false, toggle: () => {} })
 
 export function DJProvider({ children }: { children: React.ReactNode }) {
   const [dj, setDJ] = useState(false)
+  const router = useRouter()
 
   useEffect(() => {
-    const saved = localStorage.getItem('dj-mode')
-    if (saved === '1') setDJ(true)
+    const saved = document.cookie.includes('dj-mode=1') || localStorage.getItem('dj-mode') === '1'
+    if (saved) setDJ(true)
   }, [])
 
   useEffect(() => {
     if (dj) {
       document.documentElement.classList.add('dj')
       localStorage.setItem('dj-mode', '1')
+      document.cookie = 'dj-mode=1; path=/; max-age=31536000'
     } else {
       document.documentElement.classList.remove('dj')
       localStorage.setItem('dj-mode', '0')
+      document.cookie = 'dj-mode=0; path=/; max-age=31536000'
     }
+    router.refresh() // re-fetch server components with new cookie
   }, [dj])
 
   function toggle() { setDJ((v) => !v) }
@@ -36,7 +41,7 @@ export function DJToggle() {
       onClick={toggle}
       className={`font-mono text-[0.65rem] tracking-[0.2em] uppercase border px-3 py-1.5 transition-all cursor-pointer ${
         dj
-          ? 'bg-dj-accent text-dj-bg border-dj-accent'
+          ? 'bg-[#b44fff] text-white border-[#b44fff]'
           : 'border-ink-300 text-ink-500 bg-transparent hover:bg-ink-100'
       }`}
     >

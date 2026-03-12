@@ -23,3 +23,11 @@ export async function getChapterPages(chapterId: string): Promise<ConsumetChapte
   )
   return Array.isArray(data) ? data : data.pages ?? []
 }
+
+export async function getPopularDoujinshi(limit = 12): Promise<ConsumetSearchResult[]> {
+  // Search for popular doujinshi series
+  const queries = ['naruto doujinshi', 'attack on titan doujinshi', 'my hero academia doujinshi']
+  const query = queries[Math.floor(Math.random() * queries.length)]
+  const data = await fetcher<{ results: ConsumetSearchResult[] }>(`/${encodeURIComponent(query)}`)
+  return (data.results ?? []).slice(0, limit)
+}

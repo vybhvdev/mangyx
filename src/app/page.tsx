@@ -1,109 +1,129 @@
-import Image from 'next/image'
-import Link from 'next/link'
-import { MangaCard, MangaCardSkeleton } from '@/components/ui/MangaCard'
-import { getPopularManga, getRecentlyUpdated, getCoverUrl, getTitle, getDescription } from '@/lib/mangadex'
-import { Suspense } from 'react'
+import { cookies } from 'next/headers'
+import { getPopularManga, getRecentlyUpdated } from '@/lib/mangadex'
+import { searchManga as consumetSearch } from '@/lib/consumet'
+import { MangaCard } from '@/components/ui/MangaCard'
+import { UnifiedMangaCard } from '@/components/ui/UnifiedMangaCard'
+import type { UnifiedManga } from '@/lib/manga'
 
-async function HeroSection() {
-  const popular = await getPopularManga(1)
-  const featured = popular[0]
-  if (!featured) return null
+export default async function HomePage() {
+  const cookieStore = cookies()
+  const djMode = cookieStore.get('dj-mode')?.value === '1'
 
-  const title = getTitle(featured)
-  const desc = getDescription(featured)
-  const cover = getCoverUrl(featured, '512')
+  if (djMode) {
+    // DJ MODE — show doujinshi content
+    const [actionDJ, romanceDJ, recentDJ] = await Promise.all([
+      consumetSearch('action doujinshi').catch(() => []),
+      consumetSearch('romance doujinshi').catch(() => []),
+      consumetSearch('popular doujinshi').catch(() => []),
+    ])
 
-  return (
-    <section className="py-16 border-b border-ink-200 mb-12 animate-fade-up">
-      <div className="grid grid-cols-1 md:grid-cols-[1fr_260px] gap-12 items-end">
-        <div>
-          <p className="label-mono mb-4">Featured Today</p>
-          <h1 className="font-syne font-black text-[clamp(3rem,7vw,6rem)] leading-[0.95] tracking-[-0.02em] text-onyx mb-6 whitespace-pre-line">
-            {title}
-          </h1>
-          <p className="font-cormorant text-[1.1rem] text-ink-600 leading-relaxed max-w-[460px] mb-8 line-clamp-3">
-            {desc || 'No description available.'}
+    const toUnified = (results: Awaited<ReturnType<typeof consumetSearch>>): UnifiedManga[] =>
+      results.slice(0, 6).map((m) => ({
+        id: m.id,
+        source: 'consumet' as const,
+        title: m.title,
+        coverUrl: m.image,
+        description: '',
+        status: '',
+        tags: [],
+      }))
+
+    return (
+      <div className="max-w-[1200px] mx-auto px-8">
+        {/* DJ Hero */}
+        <section className="py-16 border-b border-ink-200 mb-12">
+          <p className="font-mono text-[0.7rem] tracking-[0.3em] uppercase text-[#b44fff] mb-4">
+            ● DJ Mode Active
           </p>
-          <div className="flex gap-4 items-center">
-            <Link href={`/manga/${featured.id}`} className="btn-primary">Read Now</Link>
-            <Link href={`/manga/${featured.id}`} className="btn-secondary">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
-              </svg>
-              Details
-            </Link>
+          <h1 className="font-syne font-black text-[clamp(3rem,8vw,7rem)] leading-[0.9] tracking-[-0.03em] mb-6">
+            Doujinshi<br />Reader
+          </h1>
+          <p className="font-cormorant text-[1.2rem] text-ink-600 max-w-md">
+            Fan-made works, alternate universes, and independent stories from your favourite series.
+          </p>
+        </section>
+
+        <section className="mb-12">
+          <div className="flex items-baseline justify-between mb-6">
+            <h2 className="font-syne font-bold text-[1.3rem]">Action</h2>
           </div>
-        </div>
-        {cover && (
-          <div className="hidden md:block relative aspect-[3/4] overflow-hidden bg-ink-200">
-            <Image src={cover} alt={title} fill className="object-cover" priority sizes="260px" />
-          </div>
-        )}
-      </div>
-    </section>
-  )
-}
-
-async function PopularGrid() {
-  const manga = await getPopularManga(12)
-  return (
-    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-5">
-      {manga.map((m, i) => <MangaCard key={m.id} manga={m} priority={i < 6} />)}
-    </div>
-  )
-}
-
-async function RecentGrid() {
-  const manga = await getRecentlyUpdated(16)
-  return (
-    <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-4">
-      {manga.map((m) => <MangaCard key={m.id} manga={m} />)}
-    </div>
-  )
-}
-
-export default function HomePage() {
-  return (
-    <div className="max-w-[1200px] mx-auto px-8 pb-16">
-
-      <Suspense fallback={
-        <div className="py-16 border-b border-ink-200 mb-12">
-          <div className="skeleton h-24 w-96 mb-6" />
-          <div className="skeleton h-4 w-80 mb-4" />
-          <div className="skeleton h-12 w-40" />
-        </div>
-      }>
-        <HeroSection />
-      </Suspense>
-
-      <section className="mb-16 animate-fade-up-2">
-        <div className="flex items-baseline justify-between mb-7">
-          <h2 className="font-syne font-bold text-[1.3rem] tracking-[-0.01em] text-onyx">Popular</h2>
-          <Link href="/browse" className="label-mono hover:text-onyx transition-colors no-underline">View all →</Link>
-        </div>
-        <Suspense fallback={
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-5">
-            {Array.from({ length: 12 }).map((_, i) => <MangaCardSkeleton key={i} />)}
+            {toUnified(actionDJ).map((m) => <UnifiedMangaCard key={m.id} manga={m} />)}
           </div>
-        }>
-          <PopularGrid />
-        </Suspense>
-      </section>
+        </section>
 
-      <section className="mb-16 animate-fade-up-3">
-        <div className="flex items-baseline justify-between mb-7">
-          <h2 className="font-syne font-bold text-[1.3rem] tracking-[-0.01em] text-onyx">Recently Updated</h2>
-          <Link href="/browse" className="label-mono hover:text-onyx transition-colors no-underline">View all →</Link>
+        <section className="mb-12">
+          <div className="flex items-baseline justify-between mb-6">
+            <h2 className="font-syne font-bold text-[1.3rem]">Romance</h2>
+          </div>
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-5">
+            {toUnified(romanceDJ).map((m) => <UnifiedMangaCard key={m.id} manga={m} />)}
+          </div>
+        </section>
+
+        <section className="mb-12">
+          <div className="flex items-baseline justify-between mb-6">
+            <h2 className="font-syne font-bold text-[1.3rem]">Popular</h2>
+          </div>
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-5">
+            {toUnified(recentDJ).map((m) => <UnifiedMangaCard key={m.id} manga={m} />)}
+          </div>
+        </section>
+      </div>
+    )
+  }
+
+  // NORMAL MODE — show manga content
+  const [popular, recent] = await Promise.all([
+    getPopularManga(12),
+    getRecentlyUpdated(16),
+  ])
+
+  const featured = popular[0]
+
+  return (
+    <div className="max-w-[1200px] mx-auto px-8">
+      {/* Hero */}
+      {featured && (
+        <section className="py-12 border-b border-ink-200 mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-[1fr_220px] gap-8 items-end">
+            <div>
+              <p className="font-mono text-[0.7rem] tracking-[0.25em] uppercase text-ink-400 mb-3">Featured Today</p>
+              <h1 className="font-syne font-black text-[clamp(3rem,7vw,6rem)] leading-[0.95] tracking-[-0.02em] text-onyx mb-4">
+                {featured.attributes?.title?.en ?? 'Featured'}
+              </h1>
+              <p className="font-cormorant text-[1.1rem] text-ink-600 leading-relaxed max-w-md mb-6 line-clamp-3">
+                {featured.attributes?.description?.en ?? ''}
+              </p>
+              <div className="flex gap-3">
+                <a href={`/manga/${featured.id}`} className="btn-primary">Read Now</a>
+                <a href={`/manga/${featured.id}`} className="btn-secondary">Bookmark</a>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      <section className="mb-12">
+        <div className="flex items-baseline justify-between mb-6">
+          <h2 className="font-syne font-bold text-[1.3rem]">Popular</h2>
+          <a href="/browse" className="font-mono text-[0.65rem] tracking-[0.2em] uppercase text-ink-400 hover:text-onyx transition-colors">View all →</a>
         </div>
-        <Suspense fallback={
-          <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-4">
-            {Array.from({ length: 16 }).map((_, i) => <MangaCardSkeleton key={i} />)}
-          </div>
-        }>
-          <RecentGrid />
-        </Suspense>
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-5">
+          {popular.slice(1).map((m) => <MangaCard key={m.id} manga={m} />)}
+        </div>
       </section>
 
+      <section className="mb-12">
+        <div className="flex items-baseline justify-between mb-6">
+          "Recently Updated"
+          <h2 className="font-syne font-bold text-[1.3rem]">Recently Updated</h2>
+          <a href="/browse" className="font-mono text-[0.65rem] tracking-[0.2em] uppercase text-ink-400 hover:text-onyx transition-colors">View all →</a>
+        </div>
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-8 gap-4">
+          {recent.map((m) => <MangaCard key={m.id} manga={m} />)}
+        </div>
+      </section>
     </div>
   )
 }
