@@ -3,21 +3,14 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { getServiceClient } from '@/lib/supabase'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function getUserId(session: any): string | null {
-  return session?.user?.id ?? null
-}
-
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions)
-  const userId = getUserId(session)
-  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { mangaId, mangaTitle, coverUrl, mangaStatus } = await req.json()
   const db = getServiceClient()
-
   const { error } = await db.from('bookmarks').upsert({
-    user_id: userId,
+    user_id: session.user.id,
     manga_id: mangaId,
     manga_title: mangaTitle,
     cover_url: coverUrl,
@@ -30,15 +23,13 @@ export async function POST(req: Request) {
 
 export async function DELETE(req: Request) {
   const session = await getServerSession(authOptions)
-  const userId = getUserId(session)
-  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { mangaId } = await req.json()
   const db = getServiceClient()
-
   const { error } = await db.from('bookmarks')
     .delete()
-    .eq('user_id', userId)
+    .eq('user_id', session.user.id)
     .eq('manga_id', mangaId)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
