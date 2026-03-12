@@ -68,3 +68,16 @@ export async function getMangaTags(): Promise<{ id: string; name: string }[]> {
   const d = await get<{ data: { id: string; attributes: { name: { en: string }; group: string } }[] }>('/manga/tag')
   return d.data.filter((t) => t.attributes.group === 'genre').map((t) => ({ id: t.id, name: t.attributes.name.en })).sort((a, b) => a.name.localeCompare(b.name))
 }
+
+export async function getRelatedManga(mangaId: string, tags: string[], limit = 6): Promise<Manga[]> {
+  if (tags.length === 0) return getPopularManga(limit)
+  const data = await get<MangaDexListResponse<Manga>>('/manga', {
+    limit: String(limit + 1),
+    'includedTags[]': tags.slice(0, 2),
+    'includes[]': ['cover_art'],
+    'contentRating[]': ['safe', 'suggestive'],
+    'availableTranslatedLanguage[]': ['en'],
+    'order[followedCount]': 'desc',
+  })
+  return data.data.filter((m) => m.id !== mangaId).slice(0, limit)
+}
