@@ -17,7 +17,6 @@ interface Props {
 export function ReaderClient({ pages, mangaId, chapters, currentIndex }: Props) {
   const router = useRouter()
   const [loaded, setLoaded] = useState(0)
-  const [errors, setErrors] = useState<Set<number>>(new Set())
 
   function navigate(dir: -1 | 1) {
     const next = chapters[currentIndex + dir]
@@ -29,9 +28,10 @@ export function ReaderClient({ pages, mangaId, chapters, currentIndex }: Props) 
   const nextChapter = currentIndex > 0 ? chapters[currentIndex - 1] : null
   const currentNum = chapters[currentIndex]?.num ?? '?'
 
+  const proxied = pages.map((p) => `/api/proxy?url=${encodeURIComponent(p)}`)
+
   return (
     <div className="bg-onyx min-h-screen">
-
       {/* Top bar */}
       <div className="sticky top-0 z-50 bg-[rgba(17,16,16,0.95)] border-b border-[#2a2a2a] flex items-center px-6 h-[52px] gap-4">
         <Link
@@ -53,25 +53,30 @@ export function ReaderClient({ pages, mangaId, chapters, currentIndex }: Props) 
         {pages.length === 0 ? (
           <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
             <p className="font-mono text-[0.7rem] tracking-[0.2em] uppercase text-[#444]">
-              No pages available for this chapter
+              No pages available
             </p>
-            <Link href={mangaId ? `/manga/${mangaId}` : '/'} className="font-mono text-[0.7rem] text-[#666] uppercase tracking-[0.1em] hover:text-paper transition-colors no-underline">
+            <Link
+              href={mangaId ? `/manga/${mangaId}` : '/'}
+              className="font-mono text-[0.7rem] text-[#666] uppercase tracking-[0.1em] hover:text-paper transition-colors no-underline"
+            >
               ← Back to manga
             </Link>
           </div>
         ) : (
-          pages.map((src, i) => (
-            errors.has(i) ? null : (
-              <img
-                key={i}
-                src={src}
-                alt={`Page ${i + 1}`}
-                className="w-full max-w-[720px] block"
-                loading={i < 3 ? 'eager' : 'lazy'}
-                onLoad={() => setLoaded((n) => n + 1)}
-                onError={() => setErrors((prev) => new Set(prev).add(i))}
-              />
-            )
+          proxied.map((src, i) => (
+            <img
+              key={i}
+              src={src}
+              alt={`Page ${i + 1}`}
+              className="w-full max-w-[720px] block"
+              loading={i < 3 ? 'eager' : 'lazy'}
+              onLoad={() => setLoaded((n) => n + 1)}
+              onError={(e) => {
+                // fallback to direct URL if proxy fails
+                const direct = pages[i]
+                if (e.currentTarget.src !== direct) e.currentTarget.src = direct
+              }}
+            />
           ))
         )}
       </div>
@@ -81,9 +86,9 @@ export function ReaderClient({ pages, mangaId, chapters, currentIndex }: Props) 
         <button
           onClick={() => navigate(1)}
           disabled={!prevChapter}
-          className="font-syne text-[0.75rem] tracking-[0.1em] uppercase text-[#666] hover:text-paper disabled:opacity-30 disabled:cursor-not-allowed transition-colors bg-transparent border-none cursor-pointer flex items-center gap-2"
+          className="font-syne text-[0.75rem] tracking-[0.1em] uppercase text-[#666] hover:text-paper disabled:opacity-30 disabled:cursor-not-allowed transition-colors bg-transparent border-none cursor-pointer"
         >
-          ← Prev Chapter
+          ← Prev
         </button>
         <Link
           href={mangaId ? `/manga/${mangaId}` : '/'}
@@ -94,9 +99,9 @@ export function ReaderClient({ pages, mangaId, chapters, currentIndex }: Props) 
         <button
           onClick={() => navigate(-1)}
           disabled={!nextChapter}
-          className="font-syne text-[0.75rem] tracking-[0.1em] uppercase text-[#666] hover:text-paper disabled:opacity-30 disabled:cursor-not-allowed transition-colors bg-transparent border-none cursor-pointer flex items-center gap-2"
+          className="font-syne text-[0.75rem] tracking-[0.1em] uppercase text-[#666] hover:text-paper disabled:opacity-30 disabled:cursor-not-allowed transition-colors bg-transparent border-none cursor-pointer"
         >
-          Next Chapter →
+          Next →
         </button>
       </div>
     </div>
