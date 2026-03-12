@@ -38,7 +38,8 @@ export function getScanlationGroup(chapter: Chapter): string {
 
 export async function getPopularManga(limit = 12): Promise<Manga[]> {
   const d = await get<MangaDexListResponse<Manga>>('/manga', {
-    limit: String(limit), 'includes[]': ['cover_art'],
+    limit: String(limit),
+    'includes[]': ['cover_art'],
     'contentRating[]': ['safe', 'suggestive'],
     'availableTranslatedLanguage[]': ['en'],
     'order[followedCount]': 'desc',
@@ -48,7 +49,8 @@ export async function getPopularManga(limit = 12): Promise<Manga[]> {
 
 export async function getRecentlyUpdated(limit = 16): Promise<Manga[]> {
   const d = await get<MangaDexListResponse<Manga>>('/manga', {
-    limit: String(limit), 'includes[]': ['cover_art'],
+    limit: String(limit),
+    'includes[]': ['cover_art'],
     'contentRating[]': ['safe', 'suggestive'],
     'availableTranslatedLanguage[]': ['en'],
     'order[latestUploadedChapter]': 'desc',
@@ -57,12 +59,20 @@ export async function getRecentlyUpdated(limit = 16): Promise<Manga[]> {
 }
 
 export async function searchManga(query: string, limit = 24): Promise<Manga[]> {
-  const d = await get<MangaDexListResponse<Manga>>('/manga', {
-    title: query, limit: String(limit),
+  const params: Record<string, string | string[]> = {
+    limit: String(limit),
     'includes[]': ['cover_art'],
     'contentRating[]': ['safe', 'suggestive'],
-    'order[relevance]': 'desc',
-  })
+    'order[followedCount]': 'desc',
+  }
+  if (query.trim()) {
+    params.title = query.trim()
+    params['order[relevance]'] = 'desc'
+    delete params['order[followedCount]']
+  } else {
+    params['availableTranslatedLanguage[]'] = ['en']
+  }
+  const d = await get<MangaDexListResponse<Manga>>('/manga', params)
   return d.data
 }
 
@@ -72,28 +82,16 @@ export async function getMangaById(id: string): Promise<Manga> {
 }
 
 export async function getMangaFeed(mangaId: string, limit = 40, offset = 0): Promise<{ chapters: Chapter[]; total: number }> {
-  // Try English first
-  const enData = await get<MangaDexListResponse<Chapter>>(`/manga/${mangaId}/feed`, {
-    limit: String(limit), offset: String(offset),
+  const d = await get<MangaDexListResponse<Chapter>>(`/manga/${mangaId}/feed`, {
+    limit: String(limit),
+    offset: String(offset),
     'translatedLanguage[]': ['en'],
     'order[chapter]': 'desc',
     'includes[]': ['scanlation_group'],
     'contentRating[]': ['safe', 'suggestive'],
   })
-
-  const enChapters = enData.data.filter((c) => c.attributes.chapter !== null && !c.attributes.externalUrl)
-  if (enChapters.length > 0) return { chapters: enChapters, total: enData.total }
-
-  // Fallback: any language
-  const anyData = await get<MangaDexListResponse<Chapter>>(`/manga/${mangaId}/feed`, {
-    limit: String(limit), offset: String(offset),
-    'order[chapter]': 'desc',
-    'includes[]': ['scanlation_group'],
-    'contentRating[]': ['safe', 'suggestive'],
-  })
-
-  const anyChapters = anyData.data.filter((c) => c.attributes.chapter !== null && !c.attributes.externalUrl)
-  return { chapters: anyChapters, total: anyData.total }
+  const chapters = d.data.filter((c) => c.attributes.chapter !== null && !c.attributes.externalUrl)
+  return { chapters, total: d.total }
 }
 
 export async function getChapterPages(chapterId: string): Promise<AtHomeResponse> {
@@ -102,7 +100,10 @@ export async function getChapterPages(chapterId: string): Promise<AtHomeResponse
 
 export async function getMangaTags(): Promise<{ id: string; name: string }[]> {
   const d = await get<{ data: { id: string; attributes: { name: { en: string }; group: string } }[] }>('/manga/tag')
-  return d.data.filter((t) => t.attributes.group === 'genre').map((t) => ({ id: t.id, name: t.attributes.name.en })).sort((a, b) => a.name.localeCompare(b.name))
+  return d.data
+    .filter((t) => t.attributes.group === 'genre')
+    .map((t) => ({ id: t.id, name: t.attributes.name.en }))
+    .sort((a, b) => a.name.localeCompare(b.name))
 }
 
 export async function getRelatedManga(mangaId: string, tags: string[], limit = 6): Promise<Manga[]> {
