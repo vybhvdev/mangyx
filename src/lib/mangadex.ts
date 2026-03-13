@@ -225,3 +225,44 @@ export async function getInternationalManga(limit = 6): Promise<Manga[]> {
   }
   return combined
 }
+
+export async function getMangaFeedInLang(
+  mangaId: string,
+  lang: string,
+  limit = 50,
+  offset = 0
+): Promise<{ chapters: Chapter[]; total: number }> {
+  const d = await get<MangaDexListResponse<Chapter>>(`/manga/${mangaId}/feed`, {
+    limit: String(limit),
+    offset: String(offset),
+    'translatedLanguage[]': [lang],
+    'order[chapter]': 'desc',
+    'includes[]': ['scanlation_group'],
+    'contentRating[]': ['safe', 'suggestive'],
+  })
+  const seen = new Set<string>()
+  const chapters = d.data
+    .filter((c) => c.attributes.chapter !== null && !c.attributes.externalUrl)
+    .filter((c) => {
+      const key = c.attributes.chapter!
+      if (seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
+  return { chapters, total: d.total }
+}
+
+export async function getFirstChapterInLang(mangaId: string, lang: string): Promise<Chapter | null> {
+  const d = await get<MangaDexListResponse<Chapter>>(`/manga/${mangaId}/feed`, {
+    limit: '1',
+    offset: '0',
+    'translatedLanguage[]': [lang],
+    'order[chapter]': 'asc',
+    'includes[]': ['scanlation_group'],
+    'contentRating[]': ['safe', 'suggestive'],
+  })
+  const chapters = d.data.filter(
+    (c) => c.attributes.chapter !== null && !c.attributes.externalUrl
+  )
+  return chapters[0] ?? null
+}

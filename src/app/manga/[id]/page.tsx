@@ -1,7 +1,11 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
-import { getMangaById, getMangaFeed, getFirstChapter, getRelatedManga, getCoverUrl, getTitle, getDescription, getScanlationGroup } from '@/lib/mangadex'
+import {
+  getMangaById, getMangaFeed, getMangaFeedInLang,
+  getFirstChapter, getFirstChapterInLang,
+  getRelatedManga, getCoverUrl, getTitle, getDescription, getScanlationGroup
+} from '@/lib/mangadex'
 import { BookmarkButton } from '@/components/ui/BookmarkButton'
 import { MangaCard } from '@/components/ui/MangaCard'
 import { fmtRelative } from '@/lib/utils'
@@ -9,6 +13,12 @@ import { fmtRelative } from '@/lib/utils'
 interface Props {
   params: { id: string }
   searchParams: { page?: string }
+}
+
+const LANG_LABELS: Record<string, string> = {
+  ja: 'Japanese', ko: 'Korean', zh: 'Chinese',
+  fr: 'French', es: 'Spanish', de: 'German',
+  pt: 'Portuguese', it: 'Italian', ru: 'Russian',
 }
 
 export default async function MangaPage({ params, searchParams }: Props) {
@@ -19,12 +29,29 @@ export default async function MangaPage({ params, searchParams }: Props) {
   const perPage = 50
   const offset = (page - 1) * perPage
 
-  const [manga, { chapters, total }] = await Promise.all([
-    getMangaById(params.id).catch(() => null),
+  const manga = await getMangaById(params.id).catch(() => null)
+  if (!manga) notFound()
+
+  const origLang = manga.attributes?.originalLanguage ?? 'ja'
+  const isEnglish = origLang === 'en'
+
+  // Fetch chapters in English, fallback to original language
+  const [enFeed, origFeed] = await Promise.all([
     getMangaFeed(params.id, perPage, offset).catch(() => ({ chapters: [], total: 0 })),
+    !isEnglish
+      ? getMangaFeedInLang(params.id, origLang, perPage, offset).catch(() => ({ chapters: [], total: 0 }))
+      : Promise.resolve({ chapters: [], total: 0 }),
   ])
 
-  if (!manga) notFound()
+  const hasEnglish = enFeed.total > 0
+  const activeFeed = hasEnglish ? enFeed : origFeed
+  const activeChapterLang = hasEnglish ? 'en' : origLang
+  const { chapters, total } = activeFeed
+
+  // Get first chapter for "Start Reading" button
+  const firstChapter = hasEnglish
+    ? await getFirstChapter(params.id).catch(() => null)
+    : await getFirstChapterInLang(params.id, origLang).catch(() => null)
 
   const title = getTitle(manga)
   const desc = getDescription(manga)
@@ -32,10 +59,8 @@ export default async function MangaPage({ params, searchParams }: Props) {
   const tags = manga.attributes?.tags?.slice(0, 6) ?? []
   const status = manga.attributes?.status
   const year = manga.attributes?.year
-  const lang = manga.attributes?.originalLanguage?.toUpperCase()
 
   const totalPages = Math.ceil(total / perPage)
-  const firstChapter = await getFirstChapter(params.id).catch(() => null)
 
   const genreTagIds = manga.attributes?.tags
     ?.filter((t) => t.attributes.group === 'genre')
@@ -71,7 +96,7 @@ export default async function MangaPage({ params, searchParams }: Props) {
             <div className="flex flex-wrap gap-3 font-mono text-[0.6rem] tracking-[0.12em] uppercase text-ink-400">
               {status && <span>{status}</span>}
               {year && <span>{year}</span>}
-              {lang && <span>{lang}</span>}
+              <span>{origLang.toUpperCase()}</span>
               {total > 0 && <span>{total} ch</span>}
             </div>
           </div>
@@ -85,13 +110,24 @@ export default async function MangaPage({ params, searchParams }: Props) {
               </div>
             )}
             <h1 className="font-syne font-black text-[clamp(2rem,4vw,3.5rem)] leading-[1] tracking-[-0.02em] text-onyx mb-4">{title}</h1>
-            <div className="flex gap-8 font-mono text-[0.7rem] tracking-[0.15em] uppercase text-ink-400 mb-6 flex-wrap">
+            <div className="flex gap-6 font-mono text-[0.7rem] tracking-[0.15em] uppercase text-ink-400 mb-6 flex-wrap">
               {status && <span>{status}</span>}
               {year && <span>{year}</span>}
-              {lang && <span>{lang}</span>}
+              <span>{origLang.toUpperCase()}</span>
               {total > 0 && <span>{total} ch</span>}
             </div>
           </div>
+
+          {/* Language notice for non-English */}
+          {!isEnglish && !hasEnglish && (
+            <div className="border border-ink-200 px-4 py-3 mb-6 flex items-start gap-3">
+              <span className="font-mono text-[0.65rem] tracking-[0.1em] uppercase text-ink-400 shrink-0 mt-0.5">Notice</span>
+              <p className="font-cormorant text-[1rem] text-ink-600">
+                No English translation available. Showing chapters in {LANG_LABELS[origLang] ?? origLang}.
+              </p>
+            </div>
+          )}
+
           <p className="font-cormorant text-[1.05rem] md:text-[1.1rem] text-ink-700 leading-[1.65] md:max-w-[500px] mb-6 mt-4 md:mt-0">
             {desc || 'No description available.'}
           </p>
@@ -114,6 +150,11 @@ export default async function MangaPage({ params, searchParams }: Props) {
           <h2 className="font-syne font-bold text-[1.1rem] md:text-[1.2rem]">
             Chapters
             {total > 0 && <span className="font-mono text-[0.65rem] text-ink-400 ml-3 tracking-[0.1em]">{total} total</span>}
+            {!hasEnglish && !isEnglish && total > 0 && (
+              <span className="font-mono text-[0.6rem] text-ink-400 ml-2 tracking-[0.08em]">
+                · {LANG_LABELS[origLang] ?? origLang}
+              </span>
+            )}
           </h2>
           {totalPages > 1 && (
             <span className="font-mono text-[0.62rem] text-ink-400">
@@ -123,7 +164,7 @@ export default async function MangaPage({ params, searchParams }: Props) {
         </div>
 
         {chapters.length === 0 ? (
-          <p className="label-mono py-8">No English chapters found.</p>
+          <p className="label-mono py-8">No chapters found.</p>
         ) : (
           <div>
             {chapters.map((ch) => (
@@ -151,10 +192,8 @@ export default async function MangaPage({ params, searchParams }: Props) {
         {totalPages > 1 && (
           <div className="flex items-center justify-between mt-6 pt-4 border-t border-ink-100">
             {page > 1 ? (
-              <Link
-                href={`/manga/${manga.id}?page=${page - 1}`}
-                className="font-mono text-[0.65rem] tracking-[0.15em] uppercase border border-ink-300 text-ink-600 px-4 py-2 hover:bg-ink-100 transition-colors no-underline"
-              >
+              <Link href={`/manga/${manga.id}?page=${page - 1}`}
+                className="font-mono text-[0.65rem] tracking-[0.15em] uppercase border border-ink-300 text-ink-600 px-4 py-2 hover:bg-ink-100 transition-colors no-underline">
                 ← Newer
               </Link>
             ) : <div />}
@@ -163,22 +202,17 @@ export default async function MangaPage({ params, searchParams }: Props) {
                 const p = page <= 3 ? i + 1 : page - 2 + i
                 if (p > totalPages) return null
                 return (
-                  <Link
-                    key={p}
-                    href={`/manga/${manga.id}?page=${p}`}
+                  <Link key={p} href={`/manga/${manga.id}?page=${p}`}
                     className={`font-mono text-[0.62rem] w-8 h-8 flex items-center justify-center border transition-colors no-underline
-                      ${p === page ? 'bg-onyx text-paper border-onyx' : 'border-ink-200 text-ink-500 hover:bg-ink-100'}`}
-                  >
+                      ${p === page ? 'bg-onyx text-paper border-onyx' : 'border-ink-200 text-ink-500 hover:bg-ink-100'}`}>
                     {p}
                   </Link>
                 )
               })}
             </div>
             {page < totalPages ? (
-              <Link
-                href={`/manga/${manga.id}?page=${page + 1}`}
-                className="font-mono text-[0.65rem] tracking-[0.15em] uppercase border border-ink-300 text-ink-600 px-4 py-2 hover:bg-ink-100 transition-colors no-underline"
-              >
+              <Link href={`/manga/${manga.id}?page=${page + 1}`}
+                className="font-mono text-[0.65rem] tracking-[0.15em] uppercase border border-ink-300 text-ink-600 px-4 py-2 hover:bg-ink-100 transition-colors no-underline">
                 Older →
               </Link>
             ) : <div />}
