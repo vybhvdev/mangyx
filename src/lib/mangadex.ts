@@ -214,15 +214,18 @@ export async function getInternationalManga(limit = 6): Promise<Manga[]> {
       'order[followedCount]': 'desc',
     }),
   ])
-  // Interleave ja/ko/zh, exclude any that have English translations
+  // Interleave ja/ko/zh
+  // Exclude manga that appear in English popular lists (have english title as primary)
   const combined: Manga[] = []
   const max = Math.max(...results.map(r => r.data.length))
   for (let i = 0; i < max && combined.length < limit; i++) {
     for (const r of results) {
       const m = r.data[i]
       if (!m) continue
-      const hasEn = m.attributes?.availableTranslatedLanguages?.includes('en')
-      if (!hasEn) combined.push(m)
+      // Skip if primary title is in English (meaning it's already in EN popular)
+      const titles = m.attributes?.title ?? {}
+      const hasEnTitle = 'en' in titles
+      if (!hasEnTitle) combined.push(m)
       if (combined.length >= limit) break
     }
   }
