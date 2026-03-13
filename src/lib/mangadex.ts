@@ -214,12 +214,15 @@ export async function getInternationalManga(limit = 6): Promise<Manga[]> {
       'order[followedCount]': 'desc',
     }),
   ])
-  // Interleave results: ja, ko, zh, ja, ko, zh...
+  // Interleave ja/ko/zh, exclude any that have English translations
   const combined: Manga[] = []
   const max = Math.max(...results.map(r => r.data.length))
   for (let i = 0; i < max && combined.length < limit; i++) {
     for (const r of results) {
-      if (r.data[i]) combined.push(r.data[i])
+      const m = r.data[i]
+      if (!m) continue
+      const hasEn = m.attributes?.availableTranslatedLanguages?.includes('en')
+      if (!hasEn) combined.push(m)
       if (combined.length >= limit) break
     }
   }
