@@ -38,40 +38,55 @@ export function getScanlationGroup(chapter: Chapter): string {
 
 export async function getPopularManga(limit = 12): Promise<Manga[]> {
   const d = await get<MangaDexListResponse<Manga>>('/manga', {
-    limit: String(limit * 2),
+    limit: '24',
     'includes[]': ['cover_art'],
     'contentRating[]': ['safe', 'suggestive'],
     'availableTranslatedLanguage[]': ['en'],
     'hasAvailableChapters': 'true',
     'order[followedCount]': 'desc',
   })
-  // Filter out manga with no English chapters (lastChapter is null for non-English)
-  const filtered = d.data.filter((m) => {
-    const lastVol = m.attributes?.lastVolume
-    const lastCh = m.attributes?.lastChapter
-    const lang = m.attributes?.originalLanguage
-    // If originally English, always include
-    if (lang === 'en') return true
-    // Otherwise must have lastChapter data indicating translation exists
-    return m.attributes?.availableTranslatedLanguages?.includes('en') ?? false
-  })
-  return filtered.slice(0, limit)
+  // Verify each manga actually has English chapters by checking feed in parallel
+  const checks = await Promise.all(
+    d.data.map(async (m) => {
+      try {
+        const feed = await get<MangaDexListResponse<unknown>>(`/manga/${m.id}/feed`, {
+          limit: '1',
+          'translatedLanguage[]': ['en'],
+          'order[chapter]': 'asc',
+        })
+        return feed.total > 0 ? m : null
+      } catch {
+        return null
+      }
+    })
+  )
+  return checks.filter(Boolean).slice(0, limit) as Manga[]
 }
 
 export async function getRecentlyUpdated(limit = 16): Promise<Manga[]> {
   const d = await get<MangaDexListResponse<Manga>>('/manga', {
-    limit: String(limit * 2),
+    limit: '32',
     'includes[]': ['cover_art'],
     'contentRating[]': ['safe', 'suggestive'],
     'availableTranslatedLanguage[]': ['en'],
     'hasAvailableChapters': 'true',
     'order[latestUploadedChapter]': 'desc',
   })
-  const filtered = d.data.filter((m) =>
-    m.attributes?.originalLanguage === 'en' ||
-    (m.attributes?.availableTranslatedLanguages?.includes('en') ?? false)
+  const checks = await Promise.all(
+    d.data.map(async (m) => {
+      try {
+        const feed = await get<MangaDexListResponse<unknown>>(`/manga/${m.id}/feed`, {
+          limit: '1',
+          'translatedLanguage[]': ['en'],
+          'order[chapter]': 'asc',
+        })
+        return feed.total > 0 ? m : null
+      } catch {
+        return null
+      }
+    })
   )
-  return filtered.slice(0, limit)
+  return checks.filter(Boolean).slice(0, limit) as Manga[]
 }
 
 export async function searchManga(query: string, limit = 24): Promise<Manga[]> {
