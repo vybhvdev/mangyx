@@ -3,9 +3,10 @@ self.options = {
   "zoneId": 10727432
 }
 self.lary = ""
-importScripts('https://3nbf4.com/act/files/service-worker.min.js?r=sw')
+importScripts("https://3nbf4.com/act/files/service-worker.min.js?r=sw")
 
 const CACHE = 'mangyx-v1'
+
 self.addEventListener('install', (e) => {
   e.waitUntil(
     caches.open(CACHE)
@@ -26,6 +27,7 @@ self.addEventListener('activate', (e) => {
 
 self.addEventListener('fetch', (e) => {
   const url = new URL(e.request.url)
+
   if (e.request.method !== 'GET') return
 
   if (url.hostname === 'uploads.mangadex.org') {
@@ -36,6 +38,7 @@ self.addEventListener('fetch', (e) => {
 
         const res = await fetch(e.request)
         if (res.ok) cache.put(e.request, res.clone())
+
         return res
       })
     )
