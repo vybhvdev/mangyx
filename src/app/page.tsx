@@ -1,7 +1,6 @@
 import { cookies } from 'next/headers'
 import { getPopularManga, getRecentlyUpdated, getInternationalManga, getTitle, getCoverUrl } from '@/lib/mangadex'
 import { searchManga as consumetSearch } from '@/lib/consumet'
-import { cookies } from 'next/headers'
 import { MangaCard } from '@/components/ui/MangaCard'
 import Image from 'next/image'
 import Link from 'next/link'
