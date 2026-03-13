@@ -12,7 +12,7 @@ export default async function BrowsePage({ searchParams }: Props) {
 
   // International mode
   if (lang === 'international') {
-    const manga = await getInternationalManga(24)
+    const manga = await getInternationalManga(48)
     return (
       <div className="max-w-[1200px] mx-auto px-4 md:px-8 py-10">
         <div className="mb-8">

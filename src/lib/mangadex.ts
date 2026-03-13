@@ -186,19 +186,42 @@ export async function getFirstChapter(mangaId: string): Promise<Chapter | null> 
 }
 
 export async function getInternationalManga(limit = 6): Promise<Manga[]> {
-  // Fetch popular manga NOT available in English — original language only
-  const d = await get<MangaDexListResponse<Manga>>('/manga', {
-    limit: String(limit * 3),
-    'includes[]': ['cover_art'],
-    'contentRating[]': ['safe', 'suggestive'],
-    'hasAvailableChapters': 'true',
-    'order[followedCount]': 'desc',
-  })
-  // Filter to non-English originals that have NO English translation
-  const intl = d.data.filter((m) => {
-    const orig = m.attributes?.originalLanguage
-    const hasEn = m.attributes?.availableTranslatedLanguages?.includes('en')
-    return orig !== 'en' && !hasEn
-  })
-  return intl.slice(0, limit)
+  // Fetch popular non-English original manga
+  // Use originalLanguage filter to get Japanese, Korean, Chinese manga
+  const results = await Promise.all([
+    get<MangaDexListResponse<Manga>>('/manga', {
+      limit: String(Math.ceil(limit / 3) + 2),
+      'includes[]': ['cover_art'],
+      'contentRating[]': ['safe', 'suggestive'],
+      'hasAvailableChapters': 'true',
+      'originalLanguage[]': ['ja'],
+      'order[followedCount]': 'desc',
+    }),
+    get<MangaDexListResponse<Manga>>('/manga', {
+      limit: String(Math.ceil(limit / 3) + 2),
+      'includes[]': ['cover_art'],
+      'contentRating[]': ['safe', 'suggestive'],
+      'hasAvailableChapters': 'true',
+      'originalLanguage[]': ['ko'],
+      'order[followedCount]': 'desc',
+    }),
+    get<MangaDexListResponse<Manga>>('/manga', {
+      limit: String(Math.ceil(limit / 3) + 2),
+      'includes[]': ['cover_art'],
+      'contentRating[]': ['safe', 'suggestive'],
+      'hasAvailableChapters': 'true',
+      'originalLanguage[]': ['zh'],
+      'order[followedCount]': 'desc',
+    }),
+  ])
+  // Interleave results: ja, ko, zh, ja, ko, zh...
+  const combined: Manga[] = []
+  const max = Math.max(...results.map(r => r.data.length))
+  for (let i = 0; i < max && combined.length < limit; i++) {
+    for (const r of results) {
+      if (r.data[i]) combined.push(r.data[i])
+      if (combined.length >= limit) break
+    }
+  }
+  return combined
 }
