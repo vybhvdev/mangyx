@@ -42,6 +42,7 @@ export async function getPopularManga(limit = 12): Promise<Manga[]> {
     'includes[]': ['cover_art'],
     'contentRating[]': ['safe', 'suggestive'],
     'availableTranslatedLanguage[]': ['en'],
+    'hasAvailableChapters': 'true',
     'order[followedCount]': 'desc',
   })
   return d.data
@@ -53,6 +54,7 @@ export async function getRecentlyUpdated(limit = 16): Promise<Manga[]> {
     'includes[]': ['cover_art'],
     'contentRating[]': ['safe', 'suggestive'],
     'availableTranslatedLanguage[]': ['en'],
+    'hasAvailableChapters': 'true',
     'order[latestUploadedChapter]': 'desc',
   })
   return d.data
