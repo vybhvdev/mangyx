@@ -10,9 +10,7 @@ export const metadata: Metadata = {
   description: 'A minimal, editorial manga reading experience.',
   manifest: '/manifest.json',
   appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'Mangyx' },
-  other: {
-    'monetag': 'adf67951f96db00eabd57f16ef142335',
-  },
+
 }
 
 export const viewport: Viewport = {
