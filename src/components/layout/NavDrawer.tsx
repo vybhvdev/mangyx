@@ -1,11 +1,10 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
-import { useApp, DJToggle } from '@/components/ui/DJMode'
 
 const GENRES = [
   'Action','Adventure','Comedy','Drama','Fantasy',
@@ -22,17 +21,15 @@ const LANGUAGES = [
   { code: 'es', label: 'Spanish' },
 ]
 
-type Section = 'provider' | 'genre' | 'language' | null
+type Section = 'genre' | 'language' | null
 
 function DrawerPortal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [expanded, setExpanded] = useState<Section>(null)
   const pathname = usePathname()
   const router = useRouter()
   const { data: session } = useSession()
-  const { provider, setProvider } = useApp()
 
   useEffect(() => { onClose() }, [pathname])
-
   useEffect(() => {
     document.body.style.overflow = open ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
@@ -51,33 +48,32 @@ function DrawerPortal({ open, onClose }: { open: boolean; onClose: () => void })
     router.push(`/manga/${ids[Math.floor(Math.random() * ids.length)]}`)
   }
 
+  const chevron = (expanded: boolean) => (
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#a89e8c" strokeWidth="2"
+      style={{ transform: expanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', flexShrink: 0 }}>
+      <polyline points="6,9 12,15 18,9"/>
+    </svg>
+  )
+
   return createPortal(
     <>
       {/* Backdrop */}
-      <div
-        onClick={onClose}
-        style={{
-          position: 'fixed', inset: 0, zIndex: 998,
-          background: 'rgba(17,16,16,0.45)',
-          backdropFilter: 'blur(2px)',
-          opacity: open ? 1 : 0,
-          pointerEvents: open ? 'auto' : 'none',
-          transition: 'opacity 0.3s ease',
-        }}
-      />
+      <div onClick={onClose} style={{
+        position: 'fixed', inset: 0, zIndex: 998,
+        background: 'rgba(17,16,16,0.45)', backdropFilter: 'blur(2px)',
+        opacity: open ? 1 : 0, pointerEvents: open ? 'auto' : 'none',
+        transition: 'opacity 0.3s ease',
+      }} />
 
-      {/* Drawer — slides from RIGHT */}
-      <div
-        style={{
-          position: 'fixed', top: 0, right: 0, bottom: 0,
-          width: '300px', zIndex: 999,
-          background: '#f5f2ec',
-          borderLeft: '1px solid #ddd9ce',
-          display: 'flex', flexDirection: 'column',
-          transform: open ? 'translateX(0)' : 'translateX(100%)',
-          transition: 'transform 0.3s cubic-bezier(0.32,0.72,0,1)',
-        }}
-      >
+      {/* Drawer */}
+      <div style={{
+        position: 'fixed', top: 0, right: 0, bottom: 0, width: '300px', zIndex: 999,
+        background: '#f5f2ec', borderLeft: '1px solid #ddd9ce',
+        display: 'flex', flexDirection: 'column',
+        transform: open ? 'translateX(0)' : 'translateX(100%)',
+        transition: 'transform 0.3s cubic-bezier(0.32,0.72,0,1)',
+      }}>
+
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 1.5rem', height: '60px', borderBottom: '1px solid #ddd9ce', flexShrink: 0 }}>
           <span style={{ fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: '1rem', letterSpacing: '0.08em', color: '#111010' }}>MANGYX</span>
@@ -88,7 +84,7 @@ function DrawerPortal({ open, onClose }: { open: boolean; onClose: () => void })
           </button>
         </div>
 
-        {/* Scrollable body */}
+        {/* Body */}
         <div style={{ flex: 1, overflowY: 'auto' }}>
 
           {/* Nav links */}
@@ -98,66 +94,44 @@ function DrawerPortal({ open, onClose }: { open: boolean; onClose: () => void })
               { href: '/browse', label: 'Browse', icon: '⊞' },
               { href: '/library', label: 'Library', icon: '◫' },
             ].map(({ href, label, icon }) => (
-              <Link key={href} href={href} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1.5rem', textDecoration: 'none', color: pathname === href ? '#111010' : '#756a5a', fontFamily: 'Syne, sans-serif', fontSize: '0.9rem', fontWeight: 600 }}>
+              <Link key={href} href={href} style={{
+                display: 'flex', alignItems: 'center', gap: '0.75rem',
+                padding: '0.75rem 1.5rem', textDecoration: 'none',
+                color: pathname === href ? '#111010' : '#756a5a',
+                fontFamily: 'Syne, sans-serif', fontSize: '0.9rem', fontWeight: 600,
+              }}>
                 <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.8rem', color: '#a89e8c', width: '1rem' }}>{icon}</span>
                 {label}
                 {pathname === href && <span style={{ marginLeft: 'auto', width: '5px', height: '5px', background: '#111010', borderRadius: '50%' }} />}
               </Link>
             ))}
-            <button
-              onClick={goRandom}
-              style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1.5rem', background: 'none', border: 'none', cursor: 'pointer', color: '#756a5a', fontFamily: 'Syne, sans-serif', fontSize: '0.9rem', fontWeight: 600, textAlign: 'left' }}
-            >
+            <button onClick={goRandom} style={{
+              width: '100%', display: 'flex', alignItems: 'center', gap: '0.75rem',
+              padding: '0.75rem 1.5rem', background: 'none', border: 'none',
+              cursor: 'pointer', color: '#756a5a', fontFamily: 'Syne, sans-serif',
+              fontSize: '0.9rem', fontWeight: 600, textAlign: 'left',
+            }}>
               <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.8rem', color: '#a89e8c', width: '1rem' }}>⚄</span>
               Random
             </button>
           </div>
 
-          {/* Provider */}
-          <div style={{ borderBottom: '1px solid #eeece6' }}>
-            <button onClick={() => toggle('provider')} style={{ width: '100%', display: 'flex', alignItems: 'center', padding: '1rem 1.5rem', background: 'none', border: 'none', cursor: 'pointer' }}>
-              <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.6rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#a89e8c', flex: 1, textAlign: 'left' }}>Provider</span>
-              <span style={{ fontFamily: 'Syne, sans-serif', fontSize: '0.78rem', color: '#5e5448', marginRight: '0.5rem' }}>{provider === 'mangadex' ? 'MangaDex' : 'Mangapill'}</span>
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#a89e8c" strokeWidth="2" style={{ transform: expanded === 'provider' ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
-                <polyline points="6,9 12,15 18,9"/>
-              </svg>
-            </button>
-            {expanded === 'provider' && (
-              <div style={{ padding: '0 1rem 0.75rem' }}>
-                {[
-                  { id: 'mangadex' as const, label: 'MangaDex', desc: 'Official scanlations' },
-                  { id: 'mangapill' as const, label: 'Mangapill', desc: 'Wide selection + doujinshi' },
-                ].map(p => (
-                  <button key={p.id} onClick={() => { setProvider(p.id); setExpanded(null) }}
-                    style={{ width: '100%', textAlign: 'left', padding: '0.625rem 0.75rem', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.625rem', marginBottom: '0.25rem', background: provider === p.id ? '#111010' : 'transparent', color: provider === p.id ? '#f5f2ec' : '#5e5448', transition: 'all 0.15s' }}
-                  >
-                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: provider === p.id ? '#f5f2ec' : '#c5bfb0', flexShrink: 0 }} />
-                    <div>
-                      <p style={{ fontFamily: 'Syne, sans-serif', fontSize: '0.8rem', fontWeight: 600, margin: 0 }}>{p.label}</p>
-                      <p style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.58rem', color: provider === p.id ? '#c5bfb0' : '#a89e8c', margin: 0 }}>{p.desc}</p>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
           {/* Genre */}
           <div style={{ borderBottom: '1px solid #eeece6' }}>
-            <button onClick={() => toggle('genre')} style={{ width: '100%', display: 'flex', alignItems: 'center', padding: '1rem 1.5rem', background: 'none', border: 'none', cursor: 'pointer' }}>
+            <button onClick={() => toggle('genre')} style={{
+              width: '100%', display: 'flex', alignItems: 'center',
+              padding: '1rem 1.5rem', background: 'none', border: 'none', cursor: 'pointer',
+            }}>
               <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.6rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#a89e8c', flex: 1, textAlign: 'left' }}>Genre</span>
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#a89e8c" strokeWidth="2" style={{ transform: expanded === 'genre' ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
-                <polyline points="6,9 12,15 18,9"/>
-              </svg>
+              {chevron(expanded === 'genre')}
             </button>
             {expanded === 'genre' && (
               <div style={{ padding: '0 1rem 1rem', display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
                 {GENRES.map(g => (
                   <button key={g} onClick={() => { router.push(`/browse?q=${encodeURIComponent(g)}`); onClose() }}
-                    style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.58rem', letterSpacing: '0.1em', textTransform: 'uppercase', border: '1px solid #c5bfb0', color: '#756a5a', padding: '0.25rem 0.625rem', background: 'transparent', cursor: 'pointer', transition: 'all 0.15s' }}
-                    onMouseEnter={e => { (e.target as HTMLButtonElement).style.background = '#111010'; (e.target as HTMLButtonElement).style.color = '#f5f2ec'; (e.target as HTMLButtonElement).style.borderColor = '#111010' }}
-                    onMouseLeave={e => { (e.target as HTMLButtonElement).style.background = 'transparent'; (e.target as HTMLButtonElement).style.color = '#756a5a'; (e.target as HTMLButtonElement).style.borderColor = '#c5bfb0' }}
-                  >{g}</button>
+                    style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.58rem', letterSpacing: '0.1em', textTransform: 'uppercase', border: '1px solid #c5bfb0', color: '#756a5a', padding: '0.25rem 0.625rem', background: 'transparent', cursor: 'pointer', transition: 'all 0.15s' }}>
+                    {g}
+                  </button>
                 ))}
               </div>
             )}
@@ -165,18 +139,18 @@ function DrawerPortal({ open, onClose }: { open: boolean; onClose: () => void })
 
           {/* Language */}
           <div style={{ borderBottom: '1px solid #eeece6' }}>
-            <button onClick={() => toggle('language')} style={{ width: '100%', display: 'flex', alignItems: 'center', padding: '1rem 1.5rem', background: 'none', border: 'none', cursor: 'pointer' }}>
+            <button onClick={() => toggle('language')} style={{
+              width: '100%', display: 'flex', alignItems: 'center',
+              padding: '1rem 1.5rem', background: 'none', border: 'none', cursor: 'pointer',
+            }}>
               <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.6rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#a89e8c', flex: 1, textAlign: 'left' }}>Language</span>
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#a89e8c" strokeWidth="2" style={{ transform: expanded === 'language' ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
-                <polyline points="6,9 12,15 18,9"/>
-              </svg>
+              {chevron(expanded === 'language')}
             </button>
             {expanded === 'language' && (
               <div style={{ paddingBottom: '0.5rem' }}>
                 {LANGUAGES.map(l => (
                   <button key={l.code} onClick={() => { router.push(`/browse?lang=${l.code}`); onClose() }}
-                    style={{ width: '100%', textAlign: 'left', padding: '0.625rem 1.5rem', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'Syne, sans-serif', fontSize: '0.82rem', color: '#5e5448', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-                  >
+                    style={{ width: '100%', textAlign: 'left', padding: '0.625rem 1.5rem', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'Syne, sans-serif', fontSize: '0.82rem', color: '#5e5448', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     {l.label}
                     <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.58rem', color: '#a89e8c', textTransform: 'uppercase' }}>{l.code}</span>
                   </button>
@@ -185,13 +159,16 @@ function DrawerPortal({ open, onClose }: { open: boolean; onClose: () => void })
             )}
           </div>
 
-          {/* DJ Mode */}
-          <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid #eeece6', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div>
-              <p style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.6rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#a89e8c', margin: 0 }}>DJ Mode</p>
-              <p style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '0.85rem', color: '#8f8270', marginTop: '0.2rem', marginBottom: 0 }}>Doujinshi content</p>
-            </div>
-            <DJToggle />
+          {/* International link */}
+          <div style={{ borderBottom: '1px solid #eeece6' }}>
+            <Link href="/browse?lang=international" onClick={onClose} style={{
+              display: 'flex', alignItems: 'center', gap: '0.75rem',
+              padding: '1rem 1.5rem', textDecoration: 'none',
+              color: '#756a5a', fontFamily: 'Syne, sans-serif', fontSize: '0.9rem', fontWeight: 600,
+            }}>
+              <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.8rem', color: '#a89e8c', width: '1rem' }}>⊕</span>
+              International
+            </Link>
           </div>
 
         </div>
@@ -211,7 +188,7 @@ function DrawerPortal({ open, onClose }: { open: boolean; onClose: () => void })
             </Link>
           )}
           <Link href="/info" style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.58rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#a89e8c', textDecoration: 'none' }}>
-            Info & Support
+            Info
           </Link>
         </div>
       </div>
@@ -228,11 +205,8 @@ export function NavDrawer() {
 
   return (
     <>
-      <button
-        onClick={() => setOpen(true)}
-        aria-label="Open menu"
-        style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'flex-end', gap: '5px', width: '36px', height: '36px', background: 'transparent', border: 'none', cursor: 'pointer', padding: '6px' }}
-      >
+      <button onClick={() => setOpen(true)} aria-label="Open menu"
+        style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'flex-end', gap: '5px', width: '36px', height: '36px', background: 'transparent', border: 'none', cursor: 'pointer', padding: '6px' }}>
         <span style={{ display: 'block', height: '1.5px', width: '20px', background: '#111010' }} />
         <span style={{ display: 'block', height: '1.5px', width: '14px', background: '#111010' }} />
         <span style={{ display: 'block', height: '1.5px', width: '17px', background: '#111010' }} />

@@ -89,11 +89,12 @@ export async function getRecentlyUpdated(limit = 16): Promise<Manga[]> {
   return checks.filter(Boolean).slice(0, limit) as Manga[]
 }
 
-export async function searchManga(query: string, limit = 24): Promise<Manga[]> {
+export async function searchManga(query: string, limit = 24, lang = 'en'): Promise<Manga[]> {
   const params: Record<string, string | string[]> = {
     limit: String(limit),
     'includes[]': ['cover_art'],
     'contentRating[]': ['safe', 'suggestive'],
+    'availableTranslatedLanguage[]': [lang],
     'availableTranslatedLanguage[]': ['en'],
   }
   if (query.trim()) {
@@ -182,4 +183,22 @@ export async function getFirstChapter(mangaId: string): Promise<Chapter | null> 
     (c) => c.attributes.chapter !== null && !c.attributes.externalUrl
   )
   return chapters[0] ?? null
+}
+
+export async function getInternationalManga(limit = 6): Promise<Manga[]> {
+  // Fetch popular manga NOT available in English — original language only
+  const d = await get<MangaDexListResponse<Manga>>('/manga', {
+    limit: String(limit * 3),
+    'includes[]': ['cover_art'],
+    'contentRating[]': ['safe', 'suggestive'],
+    'hasAvailableChapters': 'true',
+    'order[followedCount]': 'desc',
+  })
+  // Filter to non-English originals that have NO English translation
+  const intl = d.data.filter((m) => {
+    const orig = m.attributes?.originalLanguage
+    const hasEn = m.attributes?.availableTranslatedLanguages?.includes('en')
+    return orig !== 'en' && !hasEn
+  })
+  return intl.slice(0, limit)
 }
