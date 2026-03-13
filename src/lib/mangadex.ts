@@ -116,18 +116,54 @@ export async function getMangaFeed(
   limit = 40,
   offset = 0
 ): Promise<{ chapters: Chapter[]; total: number }> {
-  const d = await get<MangaDexListResponse<Chapter>>(`/manga/${mangaId}/feed`, {
-    limit: String(limit),
-    offset: String(offset),
+  // First call to get total
+  const first = await get<MangaDexListResponse<Chapter>>(`/manga/${mangaId}/feed`, {
+    limit: '100',
+    offset: '0',
     'translatedLanguage[]': ['en'],
-    'order[chapter]': 'desc',
+    'order[chapter]': 'asc',
     'includes[]': ['scanlation_group'],
     'contentRating[]': ['safe', 'suggestive'],
   })
-  const chapters = d.data.filter(
+
+  const total = first.total
+  let all = [...first.data]
+
+  // Fetch remaining pages in parallel if more than 100
+  if (total > 100) {
+    const offsets = []
+    for (let o = 100; o < total; o += 100) offsets.push(o)
+    const pages = await Promise.all(
+      offsets.map((o) =>
+        get<MangaDexListResponse<Chapter>>(`/manga/${mangaId}/feed`, {
+          limit: '100',
+          offset: String(o),
+          'translatedLanguage[]': ['en'],
+          'order[chapter]': 'asc',
+          'includes[]': ['scanlation_group'],
+          'contentRating[]': ['safe', 'suggestive'],
+        })
+      )
+    )
+    pages.forEach((p) => { all = [...all, ...p.data] })
+  }
+
+  // Filter out null chapters and external links, dedupe by chapter number
+  const filtered = all.filter(
     (c) => c.attributes.chapter !== null && !c.attributes.externalUrl
   )
-  return { chapters, total: d.total }
+  const seen = new Set<string>()
+  const deduped = filtered.filter((c) => {
+    const key = c.attributes.chapter!
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+
+  // Sort ascending by chapter number
+  deduped.sort((a, b) => parseFloat(a.attributes.chapter!) - parseFloat(b.attributes.chapter!))
+
+  return { chapters: deduped, total: deduped.length }
 }
 
 export async function getChapterPages(chapterId: string): Promise<AtHomeResponse> {

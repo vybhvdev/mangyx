@@ -39,7 +39,7 @@ export default async function MangaPage({ params }: Props) {
     ?.join(' & ') ?? 'Similar'
 
   const related = await getRelatedManga(manga.id, genreTagIds, 6).catch(() => [])
-  const firstChapter = chapters[chapters.length - 1]
+  const firstChapter = chapters[0] // sorted ascending, ch.1 is first
 
   return (
     <div className="max-w-[1200px] mx-auto px-4 md:px-8 pb-16 animate-fade-up">
