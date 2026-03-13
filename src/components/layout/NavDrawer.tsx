@@ -1,15 +1,16 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
 import { useApp, DJToggle } from '@/components/ui/DJMode'
 
 const GENRES = [
-  'Action', 'Adventure', 'Comedy', 'Drama', 'Fantasy',
-  'Horror', 'Mystery', 'Romance', 'Sci-Fi', 'Slice of Life',
-  'Sports', 'Supernatural', 'Thriller', 'Historical', 'Psychological',
+  'Action','Adventure','Comedy','Drama','Fantasy',
+  'Horror','Mystery','Romance','Sci-Fi','Slice of Life',
+  'Sports','Supernatural','Thriller','Historical','Psychological',
 ]
 
 const LANGUAGES = [
@@ -23,149 +24,117 @@ const LANGUAGES = [
 
 type Section = 'provider' | 'genre' | 'language' | null
 
-export function NavDrawer() {
-  const [open, setOpen] = useState(false)
+function DrawerPortal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [expanded, setExpanded] = useState<Section>(null)
   const pathname = usePathname()
   const router = useRouter()
   const { data: session } = useSession()
   const { provider, setProvider } = useApp()
 
-  // Close on route change
-  useEffect(() => { setOpen(false) }, [pathname])
+  useEffect(() => { onClose() }, [pathname])
 
-  // Lock body scroll when open
   useEffect(() => {
     document.body.style.overflow = open ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
   }, [open])
 
-  function toggle(s: Section) {
-    setExpanded((v) => (v === s ? null : s))
-  }
+  function toggle(s: Section) { setExpanded(v => v === s ? null : s) }
 
   function goRandom() {
     const ids = [
-      'a1c7c817-4e59-43b7-9365-09675a149a6f', // Berserk
-      '32d76d19-8a05-4db0-9fc2-e0b0648fe9d0', // Solo Leveling
-      'c0ee660b-f9f2-45c3-8068-5123ff53f84a', // Chainsaw Man
-      'f9c33607-9180-4ba6-b85c-e4b5faee7192', // Jujutsu Kaisen
-      'e78a489b-6632-4d61-b00b-5206f0a2ed35', // One Punch Man
+      'a1c7c817-4e59-43b7-9365-09675a149a6f',
+      '32d76d19-8a05-4db0-9fc2-e0b0648fe9d0',
+      'c0ee660b-f9f2-45c3-8068-5123ff53f84a',
+      'f9c33607-9180-4ba6-b85c-e4b5faee7192',
+      'e78a489b-6632-4d61-b00b-5206f0a2ed35',
     ]
-    const id = ids[Math.floor(Math.random() * ids.length)]
-    router.push(`/manga/${id}`)
-    setOpen(false)
+    router.push(`/manga/${ids[Math.floor(Math.random() * ids.length)]}`)
   }
 
-  return (
+  return createPortal(
     <>
-      {/* Hamburger button */}
-      <button
-        onClick={() => setOpen(true)}
-        aria-label="Open menu"
-        className="flex flex-col justify-center items-center gap-[5px] w-9 h-9 bg-transparent border-none cursor-pointer group"
-      >
-        <span className={`block h-[1.5px] bg-onyx transition-all duration-300 ${open ? 'w-5' : 'w-5'} group-hover:bg-ink-600`} />
-        <span className={`block h-[1.5px] bg-onyx transition-all duration-300 w-3.5 group-hover:bg-ink-600`} />
-        <span className={`block h-[1.5px] bg-onyx transition-all duration-300 ${open ? 'w-5' : 'w-4'} group-hover:bg-ink-600`} />
-      </button>
-
       {/* Backdrop */}
-      {open && (
-        <div
-          className="fixed inset-0 z-[199] bg-onyx/40 backdrop-blur-[2px]"
-          onClick={() => setOpen(false)}
-          style={{ animation: 'fadeIn 0.2s ease' }}
-        />
-      )}
-
-      {/* Drawer */}
       <div
-        className={`fixed top-0 right-0 z-[200] h-full w-[300px] bg-paper border-l border-ink-200 flex flex-col
-          transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]
-          ${open ? 'translate-x-0' : 'translate-x-full'}`}
+        onClick={onClose}
+        style={{
+          position: 'fixed', inset: 0, zIndex: 998,
+          background: 'rgba(17,16,16,0.45)',
+          backdropFilter: 'blur(2px)',
+          opacity: open ? 1 : 0,
+          pointerEvents: open ? 'auto' : 'none',
+          transition: 'opacity 0.3s ease',
+        }}
+      />
+
+      {/* Drawer — slides from RIGHT */}
+      <div
+        style={{
+          position: 'fixed', top: 0, right: 0, bottom: 0,
+          width: '300px', zIndex: 999,
+          background: '#f5f2ec',
+          borderLeft: '1px solid #ddd9ce',
+          display: 'flex', flexDirection: 'column',
+          transform: open ? 'translateX(0)' : 'translateX(100%)',
+          transition: 'transform 0.3s cubic-bezier(0.32,0.72,0,1)',
+        }}
       >
-        {/* Drawer header */}
-        <div className="flex items-center justify-between px-6 h-[60px] border-b border-ink-200 shrink-0">
-          <span className="font-syne font-black text-[1rem] tracking-[0.08em] text-onyx">MANGYX</span>
-          <button
-            onClick={() => setOpen(false)}
-            className="w-8 h-8 flex items-center justify-center bg-transparent border-none cursor-pointer text-ink-500 hover:text-onyx transition-colors"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 1.5rem', height: '60px', borderBottom: '1px solid #ddd9ce', flexShrink: 0 }}>
+          <span style={{ fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: '1rem', letterSpacing: '0.08em', color: '#111010' }}>MANGYX</span>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#8f8270', padding: '0.25rem' }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
               <path d="M18 6 6 18M6 6l12 12"/>
             </svg>
           </button>
         </div>
 
-        {/* Scrollable content */}
-        <div className="flex-1 overflow-y-auto py-2">
+        {/* Scrollable body */}
+        <div style={{ flex: 1, overflowY: 'auto' }}>
 
           {/* Nav links */}
-          <div className="px-2 py-2 border-b border-ink-100">
+          <div style={{ borderBottom: '1px solid #eeece6', padding: '0.5rem 0' }}>
             {[
               { href: '/', label: 'Home', icon: '⌂' },
               { href: '/browse', label: 'Browse', icon: '⊞' },
               { href: '/library', label: 'Library', icon: '◫' },
-              { href: '/info', label: 'Info & Support', icon: '◎' },
             ].map(({ href, label, icon }) => (
-              <Link
-                key={href}
-                href={href}
-                className={`flex items-center gap-3 px-4 py-3 no-underline transition-colors
-                  ${pathname === href ? 'text-onyx' : 'text-ink-600 hover:text-onyx hover:bg-ink-50'}`}
-              >
-                <span className="font-mono text-[0.8rem] text-ink-400 w-4">{icon}</span>
-                <span className="font-syne text-[0.9rem] font-600">{label}</span>
-                {pathname === href && (
-                  <span className="ml-auto w-1 h-1 bg-onyx rounded-full" />
-                )}
+              <Link key={href} href={href} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1.5rem', textDecoration: 'none', color: pathname === href ? '#111010' : '#756a5a', fontFamily: 'Syne, sans-serif', fontSize: '0.9rem', fontWeight: 600 }}>
+                <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.8rem', color: '#a89e8c', width: '1rem' }}>{icon}</span>
+                {label}
+                {pathname === href && <span style={{ marginLeft: 'auto', width: '5px', height: '5px', background: '#111010', borderRadius: '50%' }} />}
               </Link>
             ))}
-
-            {/* Random */}
             <button
               onClick={goRandom}
-              className="w-full flex items-center gap-3 px-4 py-3 bg-transparent border-none cursor-pointer text-ink-600 hover:text-onyx hover:bg-ink-50 transition-colors text-left"
+              style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1.5rem', background: 'none', border: 'none', cursor: 'pointer', color: '#756a5a', fontFamily: 'Syne, sans-serif', fontSize: '0.9rem', fontWeight: 600, textAlign: 'left' }}
             >
-              <span className="font-mono text-[0.8rem] text-ink-400 w-4">⚄</span>
-              <span className="font-syne text-[0.9rem]">Random</span>
+              <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.8rem', color: '#a89e8c', width: '1rem' }}>⚄</span>
+              Random
             </button>
           </div>
 
           {/* Provider */}
-          <div className="border-b border-ink-100">
-            <button
-              onClick={() => toggle('provider')}
-              className="w-full flex items-center gap-3 px-6 py-4 bg-transparent border-none cursor-pointer hover:bg-ink-50 transition-colors"
-            >
-              <span className="font-mono text-[0.65rem] tracking-[0.2em] uppercase text-ink-400 flex-1 text-left">Provider</span>
-              <span className="font-syne text-[0.8rem] text-ink-600 mr-2">
-                {provider === 'mangadex' ? 'MangaDex' : 'Mangapill'}
-              </span>
-              <svg
-                width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-                className={`text-ink-400 transition-transform duration-200 ${expanded === 'provider' ? 'rotate-180' : ''}`}
-              >
+          <div style={{ borderBottom: '1px solid #eeece6' }}>
+            <button onClick={() => toggle('provider')} style={{ width: '100%', display: 'flex', alignItems: 'center', padding: '1rem 1.5rem', background: 'none', border: 'none', cursor: 'pointer' }}>
+              <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.6rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#a89e8c', flex: 1, textAlign: 'left' }}>Provider</span>
+              <span style={{ fontFamily: 'Syne, sans-serif', fontSize: '0.78rem', color: '#5e5448', marginRight: '0.5rem' }}>{provider === 'mangadex' ? 'MangaDex' : 'Mangapill'}</span>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#a89e8c" strokeWidth="2" style={{ transform: expanded === 'provider' ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
                 <polyline points="6,9 12,15 18,9"/>
               </svg>
             </button>
             {expanded === 'provider' && (
-              <div className="pb-2 px-4">
+              <div style={{ padding: '0 1rem 0.75rem' }}>
                 {[
                   { id: 'mangadex' as const, label: 'MangaDex', desc: 'Official scanlations' },
                   { id: 'mangapill' as const, label: 'Mangapill', desc: 'Wide selection + doujinshi' },
-                ].map((p) => (
-                  <button
-                    key={p.id}
-                    onClick={() => { setProvider(p.id); setExpanded(null) }}
-                    className={`w-full text-left px-3 py-2.5 border-none cursor-pointer transition-colors flex items-center gap-3
-                      ${provider === p.id ? 'bg-onyx text-paper' : 'bg-transparent text-ink-700 hover:bg-ink-100'}`}
+                ].map(p => (
+                  <button key={p.id} onClick={() => { setProvider(p.id); setExpanded(null) }}
+                    style={{ width: '100%', textAlign: 'left', padding: '0.625rem 0.75rem', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.625rem', marginBottom: '0.25rem', background: provider === p.id ? '#111010' : 'transparent', color: provider === p.id ? '#f5f2ec' : '#5e5448', transition: 'all 0.15s' }}
                   >
-                    <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${provider === p.id ? 'bg-paper' : 'bg-ink-300'}`} />
+                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: provider === p.id ? '#f5f2ec' : '#c5bfb0', flexShrink: 0 }} />
                     <div>
-                      <p className="font-syne text-[0.8rem] font-semibold">{p.label}</p>
-                      <p className={`font-mono text-[0.6rem] ${provider === p.id ? 'text-ink-300' : 'text-ink-400'}`}>{p.desc}</p>
+                      <p style={{ fontFamily: 'Syne, sans-serif', fontSize: '0.8rem', fontWeight: 600, margin: 0 }}>{p.label}</p>
+                      <p style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.58rem', color: provider === p.id ? '#c5bfb0' : '#a89e8c', margin: 0 }}>{p.desc}</p>
                     </div>
                   </button>
                 ))}
@@ -174,66 +143,42 @@ export function NavDrawer() {
           </div>
 
           {/* Genre */}
-          <div className="border-b border-ink-100">
-            <button
-              onClick={() => toggle('genre')}
-              className="w-full flex items-center gap-3 px-6 py-4 bg-transparent border-none cursor-pointer hover:bg-ink-50 transition-colors"
-            >
-              <span className="font-mono text-[0.65rem] tracking-[0.2em] uppercase text-ink-400 flex-1 text-left">Genre</span>
-              <svg
-                width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-                className={`text-ink-400 transition-transform duration-200 ${expanded === 'genre' ? 'rotate-180' : ''}`}
-              >
+          <div style={{ borderBottom: '1px solid #eeece6' }}>
+            <button onClick={() => toggle('genre')} style={{ width: '100%', display: 'flex', alignItems: 'center', padding: '1rem 1.5rem', background: 'none', border: 'none', cursor: 'pointer' }}>
+              <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.6rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#a89e8c', flex: 1, textAlign: 'left' }}>Genre</span>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#a89e8c" strokeWidth="2" style={{ transform: expanded === 'genre' ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
                 <polyline points="6,9 12,15 18,9"/>
               </svg>
             </button>
             {expanded === 'genre' && (
-              <div className="pb-3 px-4 flex flex-wrap gap-2">
-                {GENRES.map((g) => (
-                  <button
-                    key={g}
-                    onClick={() => {
-                      router.push(`/browse?q=${encodeURIComponent(g)}`)
-                      setOpen(false)
-                    }}
-                    className="font-mono text-[0.6rem] tracking-[0.1em] uppercase border border-ink-300 text-ink-600
-                               px-2.5 py-1 bg-transparent cursor-pointer hover:bg-onyx hover:text-paper hover:border-onyx transition-colors"
-                  >
-                    {g}
-                  </button>
+              <div style={{ padding: '0 1rem 1rem', display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+                {GENRES.map(g => (
+                  <button key={g} onClick={() => { router.push(`/browse?q=${encodeURIComponent(g)}`); onClose() }}
+                    style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.58rem', letterSpacing: '0.1em', textTransform: 'uppercase', border: '1px solid #c5bfb0', color: '#756a5a', padding: '0.25rem 0.625rem', background: 'transparent', cursor: 'pointer', transition: 'all 0.15s' }}
+                    onMouseEnter={e => { (e.target as HTMLButtonElement).style.background = '#111010'; (e.target as HTMLButtonElement).style.color = '#f5f2ec'; (e.target as HTMLButtonElement).style.borderColor = '#111010' }}
+                    onMouseLeave={e => { (e.target as HTMLButtonElement).style.background = 'transparent'; (e.target as HTMLButtonElement).style.color = '#756a5a'; (e.target as HTMLButtonElement).style.borderColor = '#c5bfb0' }}
+                  >{g}</button>
                 ))}
               </div>
             )}
           </div>
 
           {/* Language */}
-          <div className="border-b border-ink-100">
-            <button
-              onClick={() => toggle('language')}
-              className="w-full flex items-center gap-3 px-6 py-4 bg-transparent border-none cursor-pointer hover:bg-ink-50 transition-colors"
-            >
-              <span className="font-mono text-[0.65rem] tracking-[0.2em] uppercase text-ink-400 flex-1 text-left">Language</span>
-              <svg
-                width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-                className={`text-ink-400 transition-transform duration-200 ${expanded === 'language' ? 'rotate-180' : ''}`}
-              >
+          <div style={{ borderBottom: '1px solid #eeece6' }}>
+            <button onClick={() => toggle('language')} style={{ width: '100%', display: 'flex', alignItems: 'center', padding: '1rem 1.5rem', background: 'none', border: 'none', cursor: 'pointer' }}>
+              <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.6rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#a89e8c', flex: 1, textAlign: 'left' }}>Language</span>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#a89e8c" strokeWidth="2" style={{ transform: expanded === 'language' ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
                 <polyline points="6,9 12,15 18,9"/>
               </svg>
             </button>
             {expanded === 'language' && (
-              <div className="pb-2 px-4">
-                {LANGUAGES.map((l) => (
-                  <button
-                    key={l.code}
-                    onClick={() => {
-                      router.push(`/browse?lang=${l.code}`)
-                      setOpen(false)
-                    }}
-                    className="w-full text-left px-3 py-2.5 border-none bg-transparent cursor-pointer text-ink-700
-                               hover:bg-ink-100 transition-colors font-syne text-[0.82rem]"
+              <div style={{ paddingBottom: '0.5rem' }}>
+                {LANGUAGES.map(l => (
+                  <button key={l.code} onClick={() => { router.push(`/browse?lang=${l.code}`); onClose() }}
+                    style={{ width: '100%', textAlign: 'left', padding: '0.625rem 1.5rem', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'Syne, sans-serif', fontSize: '0.82rem', color: '#5e5448', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
                   >
                     {l.label}
-                    <span className="font-mono text-[0.6rem] text-ink-400 ml-2 uppercase">{l.code}</span>
+                    <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.58rem', color: '#a89e8c', textTransform: 'uppercase' }}>{l.code}</span>
                   </button>
                 ))}
               </div>
@@ -241,48 +186,58 @@ export function NavDrawer() {
           </div>
 
           {/* DJ Mode */}
-          <div className="px-6 py-4 border-b border-ink-100 flex items-center justify-between">
+          <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid #eeece6', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
-              <p className="font-mono text-[0.65rem] tracking-[0.2em] uppercase text-ink-400">DJ Mode</p>
-              <p className="font-cormorant text-[0.85rem] text-ink-500 mt-0.5">Doujinshi content</p>
+              <p style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.6rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#a89e8c', margin: 0 }}>DJ Mode</p>
+              <p style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '0.85rem', color: '#8f8270', marginTop: '0.2rem', marginBottom: 0 }}>Doujinshi content</p>
             </div>
             <DJToggle />
           </div>
 
         </div>
 
-        {/* Drawer footer - Auth + Info */}
-        <div className="shrink-0 border-t border-ink-200 px-6 py-4 flex items-center justify-between">
+        {/* Footer */}
+        <div style={{ flexShrink: 0, borderTop: '1px solid #ddd9ce', padding: '1rem 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           {session ? (
             <div>
-              <p className="font-syne text-[0.8rem] text-onyx font-semibold">{session.user?.name}</p>
-              <button
-                onClick={() => signOut({ callbackUrl: '/' })}
-                className="font-mono text-[0.6rem] tracking-[0.1em] uppercase text-ink-400 hover:text-onyx bg-transparent border-none cursor-pointer p-0 mt-0.5 transition-colors"
-              >
+              <p style={{ fontFamily: 'Syne, sans-serif', fontSize: '0.8rem', fontWeight: 600, color: '#111010', margin: 0 }}>{session.user?.name}</p>
+              <button onClick={() => signOut({ callbackUrl: '/' })} style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.58rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#a89e8c', background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginTop: '0.2rem' }}>
                 Sign out
               </button>
             </div>
           ) : (
-            <Link
-              href="/auth/signin"
-              className="font-syne text-[0.8rem] text-ink-600 hover:text-onyx no-underline transition-colors"
-            >
+            <Link href="/auth/signin" style={{ fontFamily: 'Syne, sans-serif', fontSize: '0.82rem', color: '#756a5a', textDecoration: 'none' }}>
               Sign in
             </Link>
           )}
-          <Link
-            href="/info"
-            className="font-mono text-[0.6rem] tracking-[0.15em] uppercase text-ink-400 hover:text-onyx no-underline transition-colors"
-          >
-            v1.0
+          <Link href="/info" style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.58rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#a89e8c', textDecoration: 'none' }}>
+            Info & Support
           </Link>
         </div>
       </div>
+    </>,
+    document.body
+  )
+}
 
-      <style>{`
-        @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
-      `}</style>
+export function NavDrawer() {
+  const [open, setOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => { setMounted(true) }, [])
+
+  return (
+    <>
+      <button
+        onClick={() => setOpen(true)}
+        aria-label="Open menu"
+        style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'flex-end', gap: '5px', width: '36px', height: '36px', background: 'transparent', border: 'none', cursor: 'pointer', padding: '6px' }}
+      >
+        <span style={{ display: 'block', height: '1.5px', width: '20px', background: '#111010' }} />
+        <span style={{ display: 'block', height: '1.5px', width: '14px', background: '#111010' }} />
+        <span style={{ display: 'block', height: '1.5px', width: '17px', background: '#111010' }} />
+      </button>
+      {mounted && <DrawerPortal open={open} onClose={() => setOpen(false)} />}
     </>
   )
 }
