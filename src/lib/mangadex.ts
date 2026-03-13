@@ -113,57 +113,29 @@ export async function getMangaById(id: string): Promise<Manga> {
 
 export async function getMangaFeed(
   mangaId: string,
-  limit = 40,
+  limit = 50,
   offset = 0
 ): Promise<{ chapters: Chapter[]; total: number }> {
-  // First call to get total
-  const first = await get<MangaDexListResponse<Chapter>>(`/manga/${mangaId}/feed`, {
-    limit: '100',
-    offset: '0',
+  const d = await get<MangaDexListResponse<Chapter>>(`/manga/${mangaId}/feed`, {
+    limit: String(limit),
+    offset: String(offset),
     'translatedLanguage[]': ['en'],
-    'order[chapter]': 'asc',
+    'order[chapter]': 'desc',
     'includes[]': ['scanlation_group'],
     'contentRating[]': ['safe', 'suggestive'],
   })
-
-  const total = first.total
-  let all = [...first.data]
-
-  // Fetch remaining pages in parallel if more than 100
-  if (total > 100) {
-    const offsets = []
-    for (let o = 100; o < total; o += 100) offsets.push(o)
-    const pages = await Promise.all(
-      offsets.map((o) =>
-        get<MangaDexListResponse<Chapter>>(`/manga/${mangaId}/feed`, {
-          limit: '100',
-          offset: String(o),
-          'translatedLanguage[]': ['en'],
-          'order[chapter]': 'asc',
-          'includes[]': ['scanlation_group'],
-          'contentRating[]': ['safe', 'suggestive'],
-        })
-      )
-    )
-    pages.forEach((p) => { all = [...all, ...p.data] })
-  }
-
-  // Filter out null chapters and external links, dedupe by chapter number
-  const filtered = all.filter(
+  const filtered = d.data.filter(
     (c) => c.attributes.chapter !== null && !c.attributes.externalUrl
   )
+  // Dedupe by chapter number
   const seen = new Set<string>()
-  const deduped = filtered.filter((c) => {
+  const chapters = filtered.filter((c) => {
     const key = c.attributes.chapter!
     if (seen.has(key)) return false
     seen.add(key)
     return true
   })
-
-  // Sort ascending by chapter number
-  deduped.sort((a, b) => parseFloat(a.attributes.chapter!) - parseFloat(b.attributes.chapter!))
-
-  return { chapters: deduped, total: deduped.length }
+  return { chapters, total: d.total }
 }
 
 export async function getChapterPages(chapterId: string): Promise<AtHomeResponse> {
@@ -195,4 +167,19 @@ export async function getRelatedManga(
     'order[followedCount]': 'desc',
   })
   return data.data.filter((m) => m.id !== mangaId).slice(0, limit)
+}
+
+export async function getFirstChapter(mangaId: string): Promise<Chapter | null> {
+  const d = await get<MangaDexListResponse<Chapter>>(`/manga/${mangaId}/feed`, {
+    limit: '1',
+    offset: '0',
+    'translatedLanguage[]': ['en'],
+    'order[chapter]': 'asc',
+    'includes[]': ['scanlation_group'],
+    'contentRating[]': ['safe', 'suggestive'],
+  })
+  const chapters = d.data.filter(
+    (c) => c.attributes.chapter !== null && !c.attributes.externalUrl
+  )
+  return chapters[0] ?? null
 }

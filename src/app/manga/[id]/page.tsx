@@ -1,20 +1,27 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
-import { getMangaById, getMangaFeed, getRelatedManga, getCoverUrl, getTitle, getDescription, getScanlationGroup } from '@/lib/mangadex'
+import { getMangaById, getMangaFeed, getFirstChapter, getRelatedManga, getCoverUrl, getTitle, getDescription, getScanlationGroup } from '@/lib/mangadex'
 import { BookmarkButton } from '@/components/ui/BookmarkButton'
 import { MangaCard } from '@/components/ui/MangaCard'
 import { fmtRelative } from '@/lib/utils'
 
-interface Props { params: { id: string } }
+interface Props {
+  params: { id: string }
+  searchParams: { page?: string }
+}
 
-export default async function MangaPage({ params }: Props) {
+export default async function MangaPage({ params, searchParams }: Props) {
   const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(params.id)
   if (!isUUID) redirect(`/manga/consumet/${encodeURIComponent(params.id)}`)
 
+  const page = Math.max(1, parseInt(searchParams.page ?? '1'))
+  const perPage = 50
+  const offset = (page - 1) * perPage
+
   const [manga, { chapters, total }] = await Promise.all([
     getMangaById(params.id).catch(() => null),
-    getMangaFeed(params.id, 40, 0).catch(() => ({ chapters: [], total: 0 })),
+    getMangaFeed(params.id, perPage, offset).catch(() => ({ chapters: [], total: 0 })),
   ])
 
   if (!manga) notFound()
@@ -26,6 +33,9 @@ export default async function MangaPage({ params }: Props) {
   const status = manga.attributes?.status
   const year = manga.attributes?.year
   const lang = manga.attributes?.originalLanguage?.toUpperCase()
+
+  const totalPages = Math.ceil(total / perPage)
+  const firstChapter = await getFirstChapter(params.id).catch(() => null)
 
   const genreTagIds = manga.attributes?.tags
     ?.filter((t) => t.attributes.group === 'genre')
@@ -39,21 +49,16 @@ export default async function MangaPage({ params }: Props) {
     ?.join(' & ') ?? 'Similar'
 
   const related = await getRelatedManga(manga.id, genreTagIds, 6).catch(() => [])
-  const firstChapter = chapters[0] // sorted ascending, ch.1 is first
 
   return (
     <div className="max-w-[1200px] mx-auto px-4 md:px-8 pb-16 animate-fade-up">
 
-      {/* Hero — stacks on mobile, side-by-side on md+ */}
+      {/* Hero */}
       <div className="flex flex-col md:grid md:grid-cols-[220px_1fr] gap-6 md:gap-12 py-8 md:py-12 border-b border-ink-200 mb-8">
-
-        {/* Cover */}
         <div className="flex gap-5 md:block">
           <div className="relative w-[110px] md:w-full shrink-0 aspect-[3/4] overflow-hidden bg-ink-200">
             {cover && <Image src={cover} alt={title} fill className="object-cover" priority sizes="(max-width:768px) 110px, 220px" />}
           </div>
-
-          {/* Mobile-only: title + meta beside cover */}
           <div className="flex flex-col justify-center md:hidden min-w-0">
             {tags.length > 0 && (
               <div className="flex flex-wrap gap-1.5 mb-2">
@@ -62,9 +67,7 @@ export default async function MangaPage({ params }: Props) {
                 ))}
               </div>
             )}
-            <h1 className="font-syne font-black text-[1.4rem] leading-[1.1] tracking-[-0.02em] text-onyx mb-2">
-              {title}
-            </h1>
+            <h1 className="font-syne font-black text-[1.4rem] leading-[1.1] tracking-[-0.02em] text-onyx mb-2">{title}</h1>
             <div className="flex flex-wrap gap-3 font-mono text-[0.6rem] tracking-[0.12em] uppercase text-ink-400">
               {status && <span>{status}</span>}
               {year && <span>{year}</span>}
@@ -74,18 +77,14 @@ export default async function MangaPage({ params }: Props) {
           </div>
         </div>
 
-        {/* Detail */}
         <div>
-          {/* Desktop-only: tags + title + meta */}
           <div className="hidden md:block">
             {tags.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-4">
                 {tags.map((t) => <span key={t.id} className="tag">{t.attributes?.name?.en}</span>)}
               </div>
             )}
-            <h1 className="font-syne font-black text-[clamp(2rem,4vw,3.5rem)] leading-[1] tracking-[-0.02em] text-onyx mb-4">
-              {title}
-            </h1>
+            <h1 className="font-syne font-black text-[clamp(2rem,4vw,3.5rem)] leading-[1] tracking-[-0.02em] text-onyx mb-4">{title}</h1>
             <div className="flex gap-8 font-mono text-[0.7rem] tracking-[0.15em] uppercase text-ink-400 mb-6 flex-wrap">
               {status && <span>{status}</span>}
               {year && <span>{year}</span>}
@@ -93,13 +92,9 @@ export default async function MangaPage({ params }: Props) {
               {total > 0 && <span>{total} ch</span>}
             </div>
           </div>
-
-          {/* Description */}
           <p className="font-cormorant text-[1.05rem] md:text-[1.1rem] text-ink-700 leading-[1.65] md:max-w-[500px] mb-6 mt-4 md:mt-0">
             {desc || 'No description available.'}
           </p>
-
-          {/* Actions */}
           <div className="flex gap-3 flex-wrap">
             {firstChapter ? (
               <Link href={`/reader/${firstChapter.id}?manga=${manga.id}`} className="btn-primary">
@@ -108,23 +103,25 @@ export default async function MangaPage({ params }: Props) {
             ) : (
               <button className="btn-primary opacity-50 cursor-not-allowed" disabled>No Chapters</button>
             )}
-            <BookmarkButton
-              mangaId={manga.id} mangaTitle={title}
-              coverUrl={cover} mangaStatus={status ?? ''}
-              initialBookmarked={false}
-            />
+            <BookmarkButton mangaId={manga.id} mangaTitle={title} coverUrl={cover} mangaStatus={status ?? ''} initialBookmarked={false} />
           </div>
         </div>
       </div>
 
       {/* Chapters */}
       <div className="mb-12">
-        <h2 className="font-syne font-bold text-[1.1rem] md:text-[1.2rem] mb-4 md:mb-6">
-          Chapters
-          {total > 0 && (
-            <span className="font-mono text-[0.65rem] text-ink-400 ml-3 tracking-[0.1em]">{total} total</span>
+        <div className="flex items-baseline justify-between mb-4 md:mb-6">
+          <h2 className="font-syne font-bold text-[1.1rem] md:text-[1.2rem]">
+            Chapters
+            {total > 0 && <span className="font-mono text-[0.65rem] text-ink-400 ml-3 tracking-[0.1em]">{total} total</span>}
+          </h2>
+          {totalPages > 1 && (
+            <span className="font-mono text-[0.62rem] text-ink-400">
+              Page {page} of {totalPages}
+            </span>
           )}
-        </h2>
+        </div>
+
         {chapters.length === 0 ? (
           <p className="label-mono py-8">No English chapters found.</p>
         ) : (
@@ -147,6 +144,44 @@ export default async function MangaPage({ params }: Props) {
                 <span className="font-mono text-[0.62rem] text-ink-400 shrink-0">{fmtRelative(ch.attributes.publishAt)}</span>
               </Link>
             ))}
+          </div>
+        )}
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between mt-6 pt-4 border-t border-ink-100">
+            {page > 1 ? (
+              <Link
+                href={`/manga/${manga.id}?page=${page - 1}`}
+                className="font-mono text-[0.65rem] tracking-[0.15em] uppercase border border-ink-300 text-ink-600 px-4 py-2 hover:bg-ink-100 transition-colors no-underline"
+              >
+                ← Newer
+              </Link>
+            ) : <div />}
+            <div className="flex gap-1">
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                const p = page <= 3 ? i + 1 : page - 2 + i
+                if (p > totalPages) return null
+                return (
+                  <Link
+                    key={p}
+                    href={`/manga/${manga.id}?page=${p}`}
+                    className={`font-mono text-[0.62rem] w-8 h-8 flex items-center justify-center border transition-colors no-underline
+                      ${p === page ? 'bg-onyx text-paper border-onyx' : 'border-ink-200 text-ink-500 hover:bg-ink-100'}`}
+                  >
+                    {p}
+                  </Link>
+                )
+              })}
+            </div>
+            {page < totalPages ? (
+              <Link
+                href={`/manga/${manga.id}?page=${page + 1}`}
+                className="font-mono text-[0.65rem] tracking-[0.15em] uppercase border border-ink-300 text-ink-600 px-4 py-2 hover:bg-ink-100 transition-colors no-underline"
+              >
+                Older →
+              </Link>
+            ) : <div />}
           </div>
         )}
       </div>
