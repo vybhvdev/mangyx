@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers'
-import { getPopularManga, getRecentlyUpdated } from '@/lib/mangadex'
+import { getPopularManga, getRecentlyUpdated, getMangaFeed, getTitle, getDescription, getCoverUrl } from '@/lib/mangadex'
 import { searchManga as consumetSearch } from '@/lib/consumet'
 import { MangaCard } from '@/components/ui/MangaCard'
 import { UnifiedMangaCard } from '@/components/ui/UnifiedMangaCard'
@@ -86,7 +86,11 @@ export default async function HomePage() {
     getPopularManga(12),
     getRecentlyUpdated(16),
   ])
-  const featured = popular[0]
+  // Pick first manga that has a real English title
+  const featured = popular.find((m) => {
+    const t = m.attributes?.title
+    return t?.en || Object.values(t ?? {}).length > 0
+  }) ?? popular[0]
 
   return (
     <div className="max-w-[1200px] mx-auto px-8">
@@ -96,10 +100,10 @@ export default async function HomePage() {
             <div>
               <p className="font-mono text-[0.7rem] tracking-[0.25em] uppercase text-ink-400 mb-3">Featured Today</p>
               <h1 className="font-syne font-black text-[clamp(3rem,7vw,6rem)] leading-[0.95] tracking-[-0.02em] text-onyx mb-4">
-                {featured.attributes?.title?.en ?? 'Featured'}
+                {getTitle(featured)}
               </h1>
               <p className="font-cormorant text-[1.1rem] text-ink-600 leading-relaxed max-w-md mb-6 line-clamp-3">
-                {featured.attributes?.description?.en ?? ''}
+                {getDescription(featured)}
               </p>
               <div className="flex gap-3">
                 <a href={`/manga/${featured.id}`} className="btn-primary">Read Now</a>
