@@ -1,10 +1,50 @@
 import { cookies } from 'next/headers'
 import { getPopularManga, getRecentlyUpdated, getInternationalManga, getTitle, getCoverUrl } from '@/lib/mangadex'
+import { searchManga as consumetSearch } from '@/lib/consumet'
+import { cookies } from 'next/headers'
 import { MangaCard } from '@/components/ui/MangaCard'
 import Image from 'next/image'
 import Link from 'next/link'
 
 export default async function HomePage() {
+  // provider cookie
+  const cookieStore = cookies()
+  const provider = cookieStore.get('provider')?.value ?? 'mangadex'
+
+  if (provider === 'mangapill') {
+    const [popular, recent] = await Promise.all([
+      consumetSearch('popular manga').catch(() => []),
+      consumetSearch('action manga').catch(() => []),
+    ])
+    const toCard = (results: typeof popular) => results.slice(0, 12).map((m) => ({
+      id: m.id, source: 'consumet' as const,
+      title: m.title, coverUrl: m.image,
+      description: '', status: '', tags: [],
+    }))
+    const { UnifiedMangaCard } = await import('@/components/ui/UnifiedMangaCard')
+    return (
+      <div className="max-w-[1200px] mx-auto px-4 md:px-8">
+        <section className="py-10 border-b border-ink-200 mb-10">
+          <p className="font-mono text-[0.65rem] tracking-[0.25em] uppercase text-ink-400 mb-3">Mangapill</p>
+          <h1 className="font-syne font-black text-[clamp(2.2rem,7vw,6rem)] leading-[0.95] tracking-[-0.02em] text-onyx mb-4">Read Manga</h1>
+          <p className="font-cormorant text-[1.05rem] text-ink-600 max-w-md">Wide selection from Mangapill.</p>
+        </section>
+        <section className="mb-10">
+          <h2 className="font-syne font-bold text-[1.2rem] mb-5">Popular</h2>
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3 md:gap-5">
+            {toCard(popular).map((m) => <UnifiedMangaCard key={m.id} manga={m} />)}
+          </div>
+        </section>
+        <section className="mb-10">
+          <h2 className="font-syne font-bold text-[1.2rem] mb-5">Action</h2>
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3 md:gap-5">
+            {toCard(recent).map((m) => <UnifiedMangaCard key={m.id} manga={m} />)}
+          </div>
+        </section>
+      </div>
+    )
+  }
+
   const [popular, recent, international] = await Promise.all([
     getPopularManga(12),
     getRecentlyUpdated(16),

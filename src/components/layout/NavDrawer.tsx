@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
+import { useProvider } from '@/components/ui/ProviderContext'
 
 const GENRES = [
   'Action','Adventure','Comedy','Drama','Fantasy',
@@ -21,13 +22,14 @@ const LANGUAGES = [
   { code: 'es', label: 'Spanish' },
 ]
 
-type Section = 'genre' | 'language' | null
+type Section = 'provider' | 'genre' | 'language' | null
 
 function DrawerPortal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [expanded, setExpanded] = useState<Section>(null)
   const pathname = usePathname()
   const router = useRouter()
   const { data: session } = useSession()
+  const { provider, setProvider } = useProvider()
 
   useEffect(() => { onClose() }, [pathname])
   useEffect(() => {
@@ -114,6 +116,35 @@ function DrawerPortal({ open, onClose }: { open: boolean; onClose: () => void })
               <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.8rem', color: '#a89e8c', width: '1rem' }}>⚄</span>
               Random
             </button>
+          </div>
+
+          {/* Provider */}
+          <div style={{ borderBottom: '1px solid #eeece6' }}>
+            <button onClick={() => toggle('provider')} style={{
+              width: '100%', display: 'flex', alignItems: 'center',
+              padding: '1rem 1.5rem', background: 'none', border: 'none', cursor: 'pointer',
+            }}>
+              <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.6rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#a89e8c', flex: 1, textAlign: 'left' }}>Provider</span>
+              <span style={{ fontFamily: 'Syne, sans-serif', fontSize: '0.75rem', color: '#5e5448', marginRight: '0.5rem' }}>{provider === 'mangadex' ? 'MangaDex' : 'Mangapill'}</span>
+              {chevron(expanded === 'provider')}
+            </button>
+            {expanded === 'provider' && (
+              <div style={{ padding: '0 1rem 0.75rem' }}>
+                {([
+                  { id: 'mangadex', label: 'MangaDex', desc: 'Official scanlations · English' },
+                  { id: 'mangapill', label: 'Mangapill', desc: 'Wide selection · All languages' },
+                ] as const).map(p => (
+                  <button key={p.id} onClick={() => { setProvider(p.id); setExpanded(null) }}
+                    style={{ width: '100%', textAlign: 'left', padding: '0.625rem 0.75rem', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.625rem', marginBottom: '0.25rem', background: provider === p.id ? '#111010' : 'transparent', color: provider === p.id ? '#f5f2ec' : '#5e5448', transition: 'all 0.15s' }}>
+                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: provider === p.id ? '#f5f2ec' : '#c5bfb0', flexShrink: 0 }} />
+                    <div>
+                      <p style={{ fontFamily: 'Syne, sans-serif', fontSize: '0.8rem', fontWeight: 600, margin: 0 }}>{p.label}</p>
+                      <p style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.58rem', color: provider === p.id ? '#c5bfb0' : '#a89e8c', margin: 0 }}>{p.desc}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Genre */}
