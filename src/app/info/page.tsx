@@ -2,7 +2,7 @@ import Link from 'next/link'
 
 export default function InfoPage() {
   return (
-    <div className="max-w-[680px] mx-auto px-8 py-16">
+    <div className="max-w-[680px] mx-auto px-6 py-16">
 
       <p className="font-mono text-[0.65rem] tracking-[0.3em] uppercase text-ink-400 mb-4">About</p>
       <h1 className="font-syne font-black text-[clamp(2.5rem,6vw,5rem)] leading-[0.95] tracking-[-0.02em] text-onyx mb-8">
@@ -23,10 +23,10 @@ export default function InfoPage() {
         <div className="grid grid-cols-2 gap-4">
           {[
             ['Dual Source', 'MangaDex + Mangapill'],
-            ['DJ Mode', 'Doujinshi reader mode'],
+            ['Provider Switch', 'Choose your data source'],
             ['Reader', 'Clean page-by-page reading'],
             ['Bookmarks', 'Save your progress'],
-            ['PWA', 'Install on your device'],
+            ['International', 'JA · KO · ZH titles'],
             ['No Ads', 'Always free to read'],
           ].map(([title, desc]) => (
             <div key={title} className="border border-ink-100 p-4">
@@ -40,27 +40,17 @@ export default function InfoPage() {
       <div className="border-t border-ink-200 pt-10 mb-10">
         <p className="font-mono text-[0.65rem] tracking-[0.3em] uppercase text-ink-400 mb-6">Support</p>
         <p className="font-cormorant text-[1.1rem] text-ink-700 leading-[1.65] mb-6">
-          Mangyx is a passion project. If you enjoy using it, consider supporting its development
+          Mangyx is a passion project. If you enjoy using it, consider buying me a chai
           to keep the servers running and new features coming.
         </p>
-        <div className="flex flex-col gap-3">
-          <a
-            href="https://buymeacoffee.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-primary text-center no-underline inline-block"
-          >
-            ☕ Buy me a coffee
-          </a>
-          <a
-            href="https://ko-fi.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-secondary justify-center no-underline"
-          >
-            Support on Ko-fi
-          </a>
-        </div>
+        <a
+          href="https://buymeachai.ezee.li/vybhvdev"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn-primary text-center no-underline w-full block"
+        >
+          ☕ Buy me a Chai
+        </a>
       </div>
 
       <div className="border-t border-ink-200 pt-10">
