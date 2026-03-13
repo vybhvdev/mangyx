@@ -28,7 +28,7 @@ export function Navbar() {
           MANGYX
         </Link>
 
-        {/* Desktop nav links */}
+        {/* Desktop nav links — hidden on mobile */}
         <ul className="hidden md:flex gap-6 list-none">
           {[['/', 'Home'], ['/browse', 'Browse'], ['/library', 'Library']].map(([href, label]) => (
             <li key={href}>
@@ -43,7 +43,7 @@ export function Navbar() {
           ))}
         </ul>
 
-        {/* Search */}
+        {/* Search — pushes hamburger to far right */}
         <div className="ml-auto relative">
           <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 text-ink-400 pointer-events-none"
             width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -56,12 +56,12 @@ export function Navbar() {
             onChange={(e) => setQ(e.target.value)}
             onKeyDown={handleSearch}
             className="pl-7 pr-3 py-1.5 font-cormorant text-[0.9rem] bg-ink-100 border border-transparent
-                       outline-none text-ink-950 w-[140px] md:w-[200px] transition-all duration-200
+                       outline-none text-ink-950 w-[130px] md:w-[200px] transition-all duration-200
                        focus:border-ink-300 focus:bg-paper placeholder:text-ink-400"
           />
         </div>
 
-        {/* Hamburger / Drawer */}
+        {/* Hamburger — always rightmost */}
         <NavDrawer />
 
       </div>

@@ -73,7 +73,7 @@ export function NavDrawer() {
       {/* Backdrop */}
       {open && (
         <div
-          className="fixed inset-0 z-40 bg-onyx/40 backdrop-blur-[2px]"
+          className="fixed inset-0 z-[199] bg-onyx/40 backdrop-blur-[2px]"
           onClick={() => setOpen(false)}
           style={{ animation: 'fadeIn 0.2s ease' }}
         />
@@ -81,7 +81,7 @@ export function NavDrawer() {
 
       {/* Drawer */}
       <div
-        className={`fixed top-0 right-0 z-50 h-full w-[300px] bg-paper border-l border-ink-200 flex flex-col
+        className={`fixed top-0 right-0 z-[200] h-full w-[300px] bg-paper border-l border-ink-200 flex flex-col
           transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]
           ${open ? 'translate-x-0' : 'translate-x-full'}`}
       >
@@ -105,8 +105,9 @@ export function NavDrawer() {
           <div className="px-2 py-2 border-b border-ink-100">
             {[
               { href: '/', label: 'Home', icon: '⌂' },
+              { href: '/browse', label: 'Browse', icon: '⊞' },
               { href: '/library', label: 'Library', icon: '◫' },
-              { href: '/info', label: 'Info', icon: '◎' },
+              { href: '/info', label: 'Info & Support', icon: '◎' },
             ].map(({ href, label, icon }) => (
               <Link
                 key={href}
