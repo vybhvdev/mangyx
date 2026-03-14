@@ -39,3 +39,22 @@ alter table public.read_progress enable row level security;
 
 -- Service role bypasses RLS (used in API routes) — no extra policies needed
 -- for client-side access, add policies if you ever use the anon key directly.
+
+-- Reading progress
+CREATE TABLE IF NOT EXISTS public.reading_progress (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
+  manga_id TEXT NOT NULL,
+  chapter_id TEXT NOT NULL,
+  chapter_num TEXT NOT NULL,
+  manga_title TEXT NOT NULL,
+  cover_url TEXT,
+  source TEXT DEFAULT 'mangadex',
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(user_id, manga_id)
+);
+
+ALTER TABLE public.reading_progress ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can manage own progress" ON public.reading_progress
+  FOR ALL USING (auth.uid() = user_id);

@@ -2,7 +2,8 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useSession } from 'next-auth/react'
 import type { MangaSource } from '@/lib/manga'
 
 interface ChapterRef { id: string; num: string }
@@ -12,27 +13,49 @@ interface Props {
   pageHeaders: Record<string, string>[]
   chapterId: string
   mangaId: string
+  mangaTitle: string
+  coverUrl: string
   source: MangaSource
   chapters: ChapterRef[]
   currentIndex: number
 }
 
-export function ReaderClient({ pages, pageHeaders, mangaId, source, chapters, currentIndex }: Props) {
+export function ReaderClient({ pages, pageHeaders, mangaId, mangaTitle, coverUrl, source, chapters, currentIndex, chapterId }: Props) {
   const router = useRouter()
   const [loaded, setLoaded] = useState(0)
+  const { data: session } = useSession()
+
+  const prevChapter = currentIndex < chapters.length - 1 ? chapters[currentIndex + 1] : null
+  const nextChapter = currentIndex > 0 ? chapters[currentIndex - 1] : null
+  const currentNum = chapters[currentIndex]?.num ?? '?'
+
+  const proxied = pages.map((p) => `/api/proxy?url=${encodeURIComponent(p)}`)
+
+  // Save reading progress after 3s
+  useEffect(() => {
+    if (!session?.user) return
+    const timer = setTimeout(() => {
+      fetch('/api/progress', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mangaId,
+          chapterId,
+          chapterNum: currentNum,
+          mangaTitle,
+          coverUrl,
+          source,
+        }),
+      })
+    }, 3000)
+    return () => clearTimeout(timer)
+  }, [chapterId, session])
 
   function navigate(dir: -1 | 1) {
     const next = chapters[currentIndex + dir]
     if (!next) return
     router.push(`/reader/${next.id}?manga=${mangaId}&source=${source}`)
   }
-
-  const prevChapter = currentIndex < chapters.length - 1 ? chapters[currentIndex + 1] : null
-  const nextChapter = currentIndex > 0 ? chapters[currentIndex - 1] : null
-  const currentNum = chapters[currentIndex]?.num ?? '?'
-
-  // Always proxy images - fixes both MangaDex CORS and Consumet header requirements
-  const proxied = pages.map((p) => `/api/proxy?url=${encodeURIComponent(p)}`)
 
   return (
     <div className="bg-onyx min-h-screen">

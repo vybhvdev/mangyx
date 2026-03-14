@@ -2,6 +2,9 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
+import { getServiceClient } from '@/lib/supabase'
 import {
   getMangaById, getMangaFeed, getMangaFeedInLang,
   getFirstChapter, getFirstChapterInLang,
@@ -21,7 +24,6 @@ const LANG_LABELS: Record<string, string> = {
   fr: 'French', es: 'Spanish', de: 'German',
   pt: 'Portuguese', it: 'Italian', ru: 'Russian',
 }
-
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(params.id)
@@ -70,20 +72,29 @@ export default async function MangaPage({ params, searchParams }: Props) {
   const origLang = manga.attributes?.originalLanguage ?? 'ja'
   const isEnglish = origLang === 'en'
 
-  // Fetch chapters in English, fallback to original language
-  const [enFeed, origFeed] = await Promise.all([
+  const session = await getServerSession(authOptions)
+
+  const [enFeed, origFeed, progressRow] = await Promise.all([
     getMangaFeed(params.id, perPage, offset).catch(() => ({ chapters: [], total: 0 })),
     !isEnglish
       ? getMangaFeedInLang(params.id, origLang, perPage, offset).catch(() => ({ chapters: [], total: 0 }))
       : Promise.resolve({ chapters: [], total: 0 }),
+    session?.user?.id
+      ? getServiceClient()
+          .from('reading_progress')
+          .select('chapter_id, chapter_num')
+          .eq('user_id', session.user.id)
+          .eq('manga_id', params.id)
+          .maybeSingle()
+          .then(({ data }) => data)
+          .catch(() => null)
+      : Promise.resolve(null),
   ])
 
   const hasEnglish = enFeed.total > 0
   const activeFeed = hasEnglish ? enFeed : origFeed
-  const activeChapterLang = hasEnglish ? 'en' : origLang
   const { chapters, total } = activeFeed
 
-  // Get first chapter for "Start Reading" button
   const firstChapter = hasEnglish
     ? await getFirstChapter(params.id).catch(() => null)
     : await getFirstChapterInLang(params.id, origLang).catch(() => null)
@@ -94,7 +105,6 @@ export default async function MangaPage({ params, searchParams }: Props) {
   const tags = manga.attributes?.tags?.slice(0, 6) ?? []
   const status = manga.attributes?.status
   const year = manga.attributes?.year
-
   const totalPages = Math.ceil(total / perPage)
 
   const genreTagIds = manga.attributes?.tags
@@ -112,8 +122,6 @@ export default async function MangaPage({ params, searchParams }: Props) {
 
   return (
     <div className="max-w-[1200px] mx-auto px-4 md:px-8 pb-16 animate-fade-up">
-
-      {/* Hero */}
       <div className="flex flex-col md:grid md:grid-cols-[220px_1fr] gap-6 md:gap-12 py-8 md:py-12 border-b border-ink-200 mb-8">
         <div className="flex gap-5 md:block">
           <div className="relative w-[110px] md:w-full shrink-0 aspect-[3/4] overflow-hidden bg-ink-200">
@@ -153,7 +161,6 @@ export default async function MangaPage({ params, searchParams }: Props) {
             </div>
           </div>
 
-          {/* Language notice for non-English */}
           {!isEnglish && !hasEnglish && (
             <div className="border border-ink-200 px-4 py-3 mb-6 flex items-start gap-3">
               <span className="font-mono text-[0.65rem] tracking-[0.1em] uppercase text-ink-400 shrink-0 mt-0.5">Notice</span>
@@ -166,8 +173,21 @@ export default async function MangaPage({ params, searchParams }: Props) {
           <p className="font-cormorant text-[1.05rem] md:text-[1.1rem] text-ink-700 leading-[1.65] md:max-w-[500px] mb-6 mt-4 md:mt-0">
             {desc || 'No description available.'}
           </p>
-          <div className="flex gap-3 flex-wrap">
-            {firstChapter ? (
+
+          <div className="flex gap-3 flex-wrap items-center">
+            {progressRow ? (
+              <>
+                <Link href={`/reader/${progressRow.chapter_id}?manga=${manga.id}`} className="btn-primary">
+                  Continue Ch. {progressRow.chapter_num}
+                </Link>
+                {firstChapter && firstChapter.id !== progressRow.chapter_id && (
+                  <Link href={`/reader/${firstChapter.id}?manga=${manga.id}`}
+                    className="font-mono text-[0.65rem] tracking-[0.12em] uppercase text-ink-400 hover:text-onyx transition-colors no-underline">
+                    Start over
+                  </Link>
+                )}
+              </>
+            ) : firstChapter ? (
               <Link href={`/reader/${firstChapter.id}?manga=${manga.id}`} className="btn-primary">
                 Start Reading
               </Link>
@@ -179,7 +199,6 @@ export default async function MangaPage({ params, searchParams }: Props) {
         </div>
       </div>
 
-      {/* Chapters */}
       <div className="mb-12">
         <div className="flex items-baseline justify-between mb-4 md:mb-6">
           <h2 className="font-syne font-bold text-[1.1rem] md:text-[1.2rem]">
@@ -192,9 +211,7 @@ export default async function MangaPage({ params, searchParams }: Props) {
             )}
           </h2>
           {totalPages > 1 && (
-            <span className="font-mono text-[0.62rem] text-ink-400">
-              Page {page} of {totalPages}
-            </span>
+            <span className="font-mono text-[0.62rem] text-ink-400">Page {page} of {totalPages}</span>
           )}
         </div>
 
@@ -202,28 +219,34 @@ export default async function MangaPage({ params, searchParams }: Props) {
           <p className="label-mono py-8">No chapters found.</p>
         ) : (
           <div>
-            {chapters.map((ch) => (
-              <Link
-                key={ch.id}
-                href={`/reader/${ch.id}?manga=${manga.id}`}
-                className="flex items-center justify-between px-2 py-3 border-b border-ink-100 hover:bg-ink-50 transition-colors -mx-2 no-underline"
-              >
-                <div className="flex flex-col gap-0.5 min-w-0 mr-3">
-                  <span className="font-syne text-[0.82rem] font-medium text-onyx truncate">
-                    Chapter {ch.attributes.chapter}
-                    {ch.attributes.title ? ` — ${ch.attributes.title}` : ''}
-                  </span>
-                  {getScanlationGroup(ch) && (
-                    <span className="font-mono text-[0.58rem] text-ink-400 truncate">{getScanlationGroup(ch)}</span>
-                  )}
-                </div>
-                <span className="font-mono text-[0.62rem] text-ink-400 shrink-0">{fmtRelative(ch.attributes.publishAt)}</span>
-              </Link>
-            ))}
+            {chapters.map((ch) => {
+              const isCurrent = progressRow?.chapter_id === ch.id
+              return (
+                <Link key={ch.id} href={`/reader/${ch.id}?manga=${manga.id}`}
+                  className={`flex items-center justify-between px-2 py-3 border-b border-ink-100 hover:bg-ink-50 transition-colors -mx-2 no-underline ${isCurrent ? 'bg-ink-50' : ''}`}>
+                  <div className="flex flex-col gap-0.5 min-w-0 mr-3">
+                    <span className="font-syne text-[0.82rem] font-medium text-onyx truncate">
+                      Chapter {ch.attributes.chapter}
+                      {ch.attributes.title ? ` — ${ch.attributes.title}` : ''}
+                    </span>
+                    {getScanlationGroup(ch) && (
+                      <span className="font-mono text-[0.58rem] text-ink-400 truncate">{getScanlationGroup(ch)}</span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-3 shrink-0">
+                    {isCurrent && (
+                      <span className="font-mono text-[0.58rem] tracking-[0.12em] uppercase text-ink-400 border border-ink-200 px-1.5 py-0.5">
+                        last read
+                      </span>
+                    )}
+                    <span className="font-mono text-[0.62rem] text-ink-400">{fmtRelative(ch.attributes.publishAt)}</span>
+                  </div>
+                </Link>
+              )
+            })}
           </div>
         )}
 
-        {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex items-center justify-between mt-6 pt-4 border-t border-ink-100">
             {page > 1 ? (
@@ -255,7 +278,6 @@ export default async function MangaPage({ params, searchParams }: Props) {
         )}
       </div>
 
-      {/* Related */}
       {related.length > 0 && (
         <section className="pt-10 border-t border-ink-200">
           <div className="flex items-baseline justify-between mb-6">
