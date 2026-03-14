@@ -6,3 +6,5 @@ out/
 *.log
 .env.local
 .env.local.example
+.vercel
+.env*.local
