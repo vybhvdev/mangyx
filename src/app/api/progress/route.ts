@@ -23,39 +23,26 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const session = await getServerSession(authOptions)
+  if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const body = await req.json()
-    console.log('Progress POST body:', body)
-    console.log('User ID:', (session.user as any).id)
+  const { mangaId, chapterId, chapterNum, mangaTitle, coverUrl, source } = await req.json()
 
-    const { mangaId, chapterId, chapterNum, mangaTitle, coverUrl, source } = body
+  const { data, error } = await supabase
+    .from('reading_progress')
+    .upsert({
+      user_id: (session.user as any).id,
+      manga_id: mangaId,
+      chapter_id: chapterId,
+      chapter_num: chapterNum,
+      manga_title: mangaTitle,
+      cover_url: coverUrl ?? '',
+      source: source ?? 'mangadex',
+      updated_at: new Date().toISOString(),
+    }, { onConflict: 'user_id,manga_id' })
+    .select()
+    .single()
 
-    const { data, error } = await supabase
-      .from('reading_progress')
-      .upsert({
-        user_id: (session.user as any).id,
-        manga_id: mangaId,
-        chapter_id: chapterId,
-        chapter_num: chapterNum,
-        manga_title: mangaTitle,
-        cover_url: coverUrl ?? '',
-        source: source ?? 'mangadex',
-        updated_at: new Date().toISOString(),
-      }, { onConflict: 'user_id,manga_id' })
-      .select()
-      .single()
-
-    if (error) {
-      console.error('Supabase error:', JSON.stringify(error))
-      return NextResponse.json({ error }, { status: 500 })
-    }
-
-    return NextResponse.json(data)
-  } catch (err) {
-    console.error('Caught error:', err)
-    return NextResponse.json({ error: String(err) }, { status: 500 })
-  }
+  if (error) return NextResponse.json({ error }, { status: 500 })
+  return NextResponse.json(data)
 }
