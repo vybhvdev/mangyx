@@ -5,6 +5,8 @@ import { notFound, redirect } from 'next/navigation'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { getServiceClient } from '@/lib/supabase'
+
+export const dynamic = 'force-dynamic'
 import {
   getMangaById, getMangaFeed, getMangaFeedInLang,
   getFirstChapter, getFirstChapterInLang,
