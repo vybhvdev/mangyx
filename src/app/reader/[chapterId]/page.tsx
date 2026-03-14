@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getMangaFeed } from '@/lib/mangadex'
 import { getPages } from '@/lib/manga'
@@ -7,6 +8,16 @@ import type { MangaSource } from '@/lib/manga'
 interface Props {
   params: { chapterId: string }
   searchParams: { manga?: string; source?: string }
+}
+
+
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
+  const chapterId = decodeURIComponent(params.chapterId)
+  const source = searchParams.source ?? 'mangadex'
+  return {
+    title: `Reading Chapter — Mangyx`,
+    robots: { index: false }, // don't index reader pages
+  }
 }
 
 export default async function ReaderPage({ params, searchParams }: Props) {

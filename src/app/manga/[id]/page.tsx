@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
@@ -19,6 +20,39 @@ const LANG_LABELS: Record<string, string> = {
   ja: 'Japanese', ko: 'Korean', zh: 'Chinese',
   fr: 'French', es: 'Spanish', de: 'German',
   pt: 'Portuguese', it: 'Italian', ru: 'Russian',
+}
+
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(params.id)
+  if (!isUUID) return {}
+
+  const manga = await getMangaById(params.id).catch(() => null)
+  if (!manga) return { title: 'Manga Not Found — Mangyx' }
+
+  const title = getTitle(manga)
+  const desc = getDescription(manga)
+  const cover = getCoverUrl(manga, '512')
+  const tags = manga.attributes?.tags?.slice(0, 5).map((t) => t.attributes?.name?.en).join(', ')
+
+  return {
+    title: `${title} — Read Free on Mangyx`,
+    description: desc ? desc.slice(0, 160) : `Read ${title} manga free on Mangyx.`,
+    keywords: [title, 'manga', 'read manga free', tags ?? ''].filter(Boolean),
+    openGraph: {
+      title: `${title} — Mangyx`,
+      description: desc ? desc.slice(0, 160) : `Read ${title} manga free on Mangyx.`,
+      images: cover ? [{ url: cover, width: 512, height: 720, alt: title }] : [],
+      type: 'website',
+      siteName: 'Mangyx',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${title} — Mangyx`,
+      description: desc ? desc.slice(0, 160) : `Read ${title} manga free on Mangyx.`,
+      images: cover ? [cover] : [],
+    },
+  }
 }
 
 export default async function MangaPage({ params, searchParams }: Props) {
