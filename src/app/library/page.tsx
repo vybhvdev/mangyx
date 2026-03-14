@@ -39,34 +39,35 @@ export default async function LibraryPage() {
           {items.map((bm) => {
             const progress = progressMap[bm.manga_id]
             return (
-              <Link key={bm.id} href={`/manga/${bm.manga_id}`} className="group no-underline">
-                <div className="relative aspect-[3/4] overflow-hidden bg-ink-200">
-                  {bm.cover_url && (
-                    <Image
-                      src={bm.cover_url}
-                      alt={bm.manga_title}
-                      fill
-                      className="object-cover transition-transform duration-400 group-hover:scale-[1.04]"
-                      sizes="200px"
-                    />
-                  )}
-                  {bm.status && (
-                    <span className="absolute top-1.5 left-1.5 bg-paper/90 font-mono text-[9px] tracking-[0.15em] uppercase text-ink-700 px-1.5 py-0.5">
-                      {bm.status}
-                    </span>
-                  )}
-                  {progress && (
-                    <Link
-                      href={`/reader/${progress.chapterId}?manga=${bm.manga_id}`}
-                      onClick={(e) => e.stopPropagation()}
-                      className="absolute bottom-1.5 left-1.5 right-1.5 bg-onyx/90 font-mono text-[9px] tracking-[0.12em] uppercase text-paper px-1.5 py-1 text-center hover:bg-onyx transition-colors no-underline"
-                    >
-                      Ch. {progress.chapterNum} →
-                    </Link>
-                  )}
-                </div>
-                <p className="card-title group-hover:text-ink-600">{bm.manga_title}</p>
-              </Link>
+              <div key={bm.id} className="group relative">
+                <Link href={`/manga/${bm.manga_id}`} className="no-underline block">
+                  <div className="relative aspect-[3/4] overflow-hidden bg-ink-200">
+                    {bm.cover_url && (
+                      <Image
+                        src={bm.cover_url}
+                        alt={bm.manga_title}
+                        fill
+                        className="object-cover transition-transform duration-400 group-hover:scale-[1.04]"
+                        sizes="200px"
+                      />
+                    )}
+                    {bm.status && (
+                      <span className="absolute top-1.5 left-1.5 bg-paper/90 font-mono text-[9px] tracking-[0.15em] uppercase text-ink-700 px-1.5 py-0.5">
+                        {bm.status}
+                      </span>
+                    )}
+                  </div>
+                  <p className="card-title group-hover:text-ink-600">{bm.manga_title}</p>
+                </Link>
+                {progress && (
+                  <a
+                    href={`/reader/${progress.chapterId}?manga=${bm.manga_id}`}
+                    className="absolute bottom-6 left-0 right-0 bg-onyx/90 font-mono text-[9px] tracking-[0.12em] uppercase text-paper px-1.5 py-1 text-center hover:bg-onyx transition-colors no-underline"
+                  >
+                    Ch. {progress.chapterNum} →
+                  </a>
+                )}
+              </div>
             )
           })}
         </div>
