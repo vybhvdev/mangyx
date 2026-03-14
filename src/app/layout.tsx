@@ -35,6 +35,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <PWAInstall />
           <ServiceWorkerRegister />
         </Providers>
+        <script src="https://pl28912884.effectivegatecpm.com/bf/d9/c1/bfd9c169e62016f4b496225e23f16aaf.js"></script>
       </body>
     </html>
   )
