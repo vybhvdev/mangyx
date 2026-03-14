@@ -2,6 +2,7 @@ import { cookies } from 'next/headers'
 import { getPopularManga, getRecentlyUpdated, getInternationalManga, getTitle, getCoverUrl } from '@/lib/mangadex'
 import { searchManga as consumetSearch } from '@/lib/consumet'
 import { MangaCard } from '@/components/ui/MangaCard'
+import { NativeBanner } from '@/components/ui/NativeBanner'
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -91,6 +92,9 @@ export default async function HomePage() {
           {popular.slice(1).map((m) => <MangaCard key={m.id} manga={m} />)}
         </div>
       </section>
+
+      {/* Native Banner Ad */}
+      <NativeBanner />
 
       {/* Recently Updated */}
       <section className="mb-10">

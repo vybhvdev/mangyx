@@ -37,6 +37,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </Providers>
         <script src="https://pl28912884.effectivegatecpm.com/bf/d9/c1/bfd9c169e62016f4b496225e23f16aaf.js"></script>
         <script src="https://pl28914249.effectivegatecpm.com/e2/8b/6e/e28b6e81f29739c8f9ce99292c0b2098.js"></script>
+        <script async={true} data-cfasync="false" src="https://pl28914271.effectivegatecpm.com/3003c884cc43544d3f829cbf311fad84/invoke.js"></script>
       </body>
     </html>
   )
