@@ -45,9 +45,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       images: cover ? [{ url: cover, width: 512, height: 720, alt: title }] : [],
       type: 'website',
       siteName: 'Mangyx',
+      url: `https://mangyx.vercel.app/manga/${params.id}`,
     },
     twitter: {
-      card: 'summary_large_image',
+      card: 'summary',
       title: `${title} — Mangyx`,
       description: desc ? desc.slice(0, 160) : `Read ${title} manga free on Mangyx.`,
       images: cover ? [cover] : [],
