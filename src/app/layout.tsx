@@ -5,6 +5,7 @@ import { Providers } from './providers'
 import { PWAInstall } from '@/components/ui/PWAInstall'
 import { ServiceWorkerRegister } from '@/components/ui/ServiceWorkerRegister'
 import Script from 'next/script'
+import { Analytics } from '@vercel/analytics/react'
 
 export const metadata: Metadata = {
   title: 'Mangyx — Read Manga',
@@ -34,6 +35,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <main>{children}</main>
           <PWAInstall />
           <ServiceWorkerRegister />
+          <Analytics />
         </Providers>
         {/* Google Analytics */}
         <Script src="https://www.googletagmanager.com/gtag/js?id=G-EDLP01M028" strategy="afterInteractive" />
