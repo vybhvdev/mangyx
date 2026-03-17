@@ -5,21 +5,32 @@ export function ReaderBannerAd() {
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const s1 = document.createElement('script')
-    s1.innerHTML = `atOptions = {'key':'639382cab495612217075772b6044704','format':'iframe','height':250,'width':300,'params':{}};`
-    const s2 = document.createElement('script')
-    s2.src = 'https://www.highperformanceformat.com/639382cab495612217075772b6044704/invoke.js'
-    s2.async = true
-    document.body.appendChild(s1)
-    document.body.appendChild(s2)
+    if (!ref.current) return
 
-    return () => {
-      document.body.removeChild(s1)
-      if (document.body.contains(s2)) document.body.removeChild(s2)
-    }
+    // JuicyAds
+    const s1 = document.createElement('script')
+    s1.src = 'https://poweredby.jads.co/js/jads.js'
+    s1.async = true
+    s1.setAttribute('data-cfasync', 'false')
+
+    const ins = document.createElement('ins')
+    ins.id = '1113304'
+    ins.setAttribute('data-width', '300')
+    ins.setAttribute('data-height', '250')
+
+    const s2 = document.createElement('script')
+    s2.async = true
+    s2.setAttribute('data-cfasync', 'false')
+    s2.innerHTML = `(adsbyjuicy = window.adsbyjuicy || []).push({'adzone':1113304});`
+
+    ref.current.appendChild(s1)
+    ref.current.appendChild(ins)
+    ref.current.appendChild(s2)
   }, [])
 
   return (
-    <div ref={ref} className="flex justify-center py-4 bg-[#0d0d0d] min-h-[266px]" />
+    <div className="flex justify-center py-4 bg-[#0d0d0d]">
+      <div ref={ref} style={{ width: 300, height: 250 }} />
+    </div>
   )
 }
