@@ -50,6 +50,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             gtag('config', 'G-EDLP01M028');
           `}
         </Script>
+        {/* Propeller Push Notifications */}
+        <Script id="propeller-push" strategy="afterInteractive">
+          {`
+            var s=document.createElement('script');
+            s.src='//vayxi.com/47f/5c0ec/mw.min.js?z=10741855&sw=/sw-check-permissions-70719.js';
+            document.head.appendChild(s);
+          `}
+        </Script>
       </body>
     </html>
   )
