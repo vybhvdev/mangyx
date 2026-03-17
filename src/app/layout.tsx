@@ -26,6 +26,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <head>
         <meta name="monetag" content="adf67951f96db00eabd57f16ef142335" />
+        <meta name="pushsdk" content="1b5fe098e6bf2dcf9a73bc546c756a04" />
         <link rel="apple-touch-icon" href="/icon-192.png" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
