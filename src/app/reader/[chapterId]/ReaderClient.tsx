@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import type { MangaSource } from '@/lib/manga'
+import { ReaderBannerAd } from '@/components/ui/ReaderBannerAd'
 
 interface ChapterRef { id: string; num: string }
 
@@ -105,6 +106,14 @@ export function ReaderClient({ pages, pageHeaders, mangaId, mangaTitle, coverUrl
           ))
         )}
       </div>
+
+      {/* Ad Banner */}
+      <div className="flex justify-center py-4 bg-[#0d0d0d]">
+        <script dangerouslySetInnerHTML={{ __html: `atOptions = { 'key': '639382cab495612217075772b6044704', 'format': 'iframe', 'height': 250, 'width': 300, 'params': {} };` }} />
+        <script src="https://www.highperformanceformat.com/639382cab495612217075772b6044704/invoke.js" />
+      </div>
+
+      <ReaderBannerAd />
 
       {/* Bottom bar */}
       <div className="sticky bottom-0 bg-[rgba(17,16,16,0.95)] border-t border-[#2a2a2a] flex items-center justify-between px-8 h-[52px]">
