@@ -17,7 +17,7 @@ export function MangaCard({ manga, priority = false, showLangBadge = false }: Pr
   return (
     <Link href={`/manga/${manga.id}`} className="group cursor-pointer no-underline">
       <div className="relative overflow-hidden bg-ink-200 aspect-[3/4]">
-        {cover && (
+        {cover ? (
           <Image
             src={cover}
             alt={title}
@@ -25,7 +25,14 @@ export function MangaCard({ manga, priority = false, showLangBadge = false }: Pr
             sizes="(max-width: 768px) 33vw, (max-width: 1200px) 16vw, 200px"
             className="object-cover transition-transform duration-400 ease-out group-hover:scale-[1.04]"
             priority={priority}
+            onError={(e) => { e.currentTarget.style.display = 'none' }}
           />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center bg-ink-200">
+            <span className="font-syne font-black text-[1.5rem] text-ink-400 text-center px-2 leading-tight">
+              {title.slice(0, 2).toUpperCase()}
+            </span>
+          </div>
         )}
         {showLangBadge && manga.attributes?.originalLanguage && (
           <span className="absolute top-1.5 right-1.5 bg-onyx text-paper font-mono text-[8px] tracking-[0.1em] uppercase px-1.5 py-0.5 z-10">
