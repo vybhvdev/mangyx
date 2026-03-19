@@ -7,7 +7,6 @@ import Image from 'next/image'
 import Link from 'next/link'
 
 export default async function HomePage() {
-  // provider cookie
   const cookieStore = cookies()
   const provider = cookieStore.get('provider')?.value ?? 'mangadex'
 
@@ -22,21 +21,50 @@ export default async function HomePage() {
       description: '', status: '', tags: [],
     }))
     const { UnifiedMangaCard } = await import('@/components/ui/UnifiedMangaCard')
+    const featured = toCard(popular)[0]
     return (
       <div className="max-w-[1200px] mx-auto px-4 md:px-8">
-        <section className="py-10 border-b border-ink-200 mb-10">
-          <p className="font-mono text-[0.65rem] tracking-[0.25em] uppercase text-ink-400 mb-3">Mangapill</p>
-          <h1 className="font-syne font-black text-[clamp(2.2rem,7vw,6rem)] leading-[0.95] tracking-[-0.02em] text-onyx mb-4">Read Manga</h1>
-          <p className="font-cormorant text-[1.05rem] text-ink-600 max-w-md">Wide selection from Mangapill.</p>
-        </section>
+        {featured && (
+          <section className="py-10 md:py-12 border-b border-ink-200 mb-10">
+            <div className="flex gap-5 md:grid md:grid-cols-[1fr_200px] md:gap-10 items-start md:items-end">
+              <div className="flex-1 min-w-0">
+                <p className="font-mono text-[0.65rem] tracking-[0.25em] uppercase text-ink-400 mb-3">Featured Today</p>
+                <h1 className="font-syne font-black text-[clamp(2.2rem,7vw,6rem)] leading-[0.95] tracking-[-0.02em] text-onyx mb-4">
+                  {featured.title}
+                </h1>
+                <div className="flex gap-3 flex-wrap">
+                  <a href={`/manga/consumet/${encodeURIComponent(featured.id)}`} className="btn-primary">Read Now</a>
+                  <a href={`/manga/consumet/${encodeURIComponent(featured.id)}`} className="btn-secondary">Details</a>
+                </div>
+              </div>
+              <div className="relative w-[90px] md:w-full shrink-0 aspect-[3/4] overflow-hidden bg-ink-200">
+                {featured.coverUrl && (
+                  <Image
+                    src={`/api/proxy?url=${encodeURIComponent(featured.coverUrl)}`}
+                    alt={featured.title}
+                    fill
+                    className="object-cover"
+                    priority
+                    sizes="200px"
+                  />
+                )}
+              </div>
+            </div>
+          </section>
+        )}
         <section className="mb-10">
-          <h2 className="font-syne font-bold text-[1.2rem] mb-5">Popular</h2>
+          <div className="flex items-baseline justify-between mb-5">
+            <h2 className="font-syne font-bold text-[1.2rem]">Popular</h2>
+          </div>
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3 md:gap-5">
-            {toCard(popular).map((m) => <UnifiedMangaCard key={m.id} manga={m} />)}
+            {toCard(popular).slice(1).map((m) => <UnifiedMangaCard key={m.id} manga={m} />)}
           </div>
         </section>
+        <NativeBanner />
         <section className="mb-10">
-          <h2 className="font-syne font-bold text-[1.2rem] mb-5">Action</h2>
+          <div className="flex items-baseline justify-between mb-5">
+            <h2 className="font-syne font-bold text-[1.2rem]">Action</h2>
+          </div>
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3 md:gap-5">
             {toCard(recent).map((m) => <UnifiedMangaCard key={m.id} manga={m} />)}
           </div>
@@ -55,8 +83,6 @@ export default async function HomePage() {
 
   return (
     <div className="max-w-[1200px] mx-auto px-4 md:px-8">
-
-      {/* Hero */}
       {featured && (
         <section className="py-10 md:py-12 border-b border-ink-200 mb-10">
           <div className="flex gap-5 md:grid md:grid-cols-[1fr_200px] md:gap-10 items-start md:items-end">
@@ -81,8 +107,6 @@ export default async function HomePage() {
           </div>
         </section>
       )}
-
-      {/* Popular */}
       <section className="mb-10">
         <div className="flex items-baseline justify-between mb-5">
           <h2 className="font-syne font-bold text-[1.2rem]">Popular</h2>
@@ -92,11 +116,7 @@ export default async function HomePage() {
           {popular.slice(1).map((m) => <MangaCard key={m.id} manga={m} />)}
         </div>
       </section>
-
-      {/* Native Banner Ad */}
       <NativeBanner />
-
-      {/* Recently Updated */}
       <section className="mb-10">
         <div className="flex items-baseline justify-between mb-5">
           <h2 className="font-syne font-bold text-[1.2rem]">Recently Updated</h2>
@@ -106,8 +126,6 @@ export default async function HomePage() {
           {recent.map((m) => <MangaCard key={m.id} manga={m} />)}
         </div>
       </section>
-
-      {/* International */}
       {international.length > 0 && (
         <section className="mb-10 pt-8 border-t border-ink-200">
           <div className="flex items-baseline justify-between mb-2">
@@ -120,7 +138,6 @@ export default async function HomePage() {
           </div>
         </section>
       )}
-
     </div>
   )
 }
