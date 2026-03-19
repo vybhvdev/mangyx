@@ -1,30 +1,29 @@
 import { cookies } from 'next/headers'
 import { getPopularManga, getRecentlyUpdated, getInternationalManga, getTitle, getCoverUrl } from '@/lib/mangadex'
 import { searchManga as consumetSearch } from '@/lib/consumet'
-import { getMangaInfo } from '@/lib/consumet'
 import { MangaCard } from '@/components/ui/MangaCard'
 import { NativeBanner } from '@/components/ui/NativeBanner'
 import Image from 'next/image'
-import Link from 'next/link'
 
 export default async function HomePage() {
   const cookieStore = cookies()
   const provider = cookieStore.get('provider')?.value ?? 'mangadex'
 
   if (provider === 'mangapill') {
-    const [popular, recent] = await Promise.all([
-      consumetSearch('popular manga').catch(() => []),
-      consumetSearch('latest manga').catch(() => []),
+    const [shounen, action, romance, horror, comedy] = await Promise.all([
+      consumetSearch('shounen').catch(() => []),
+      consumetSearch('action').catch(() => []),
+      consumetSearch('romance').catch(() => []),
+      consumetSearch('horror').catch(() => []),
+      consumetSearch('comedy').catch(() => []),
     ])
-    const toCard = (items: typeof popular) => items.map((m) => ({
+    const toCard = (items: typeof shounen) => items.map((m) => ({
       id: m.id, source: 'consumet' as const,
       title: m.title, coverUrl: m.image,
       description: '', status: '', tags: [],
     }))
-    const popularCards = toCard(popular)
-    const recentCards = toCard(recent)
     const { UnifiedMangaCard } = await import('@/components/ui/UnifiedMangaCard')
-    const featured = popularCards[0] ?? { id: '2/one-piece', title: 'Attack on Titan', coverUrl: '', source: 'consumet' as const, description: '', status: '', tags: [] }
+    const featured = toCard(shounen)[0]
     return (
       <div className="max-w-[1200px] mx-auto px-4 md:px-8">
         {featured && (
@@ -56,24 +55,30 @@ export default async function HomePage() {
           </section>
         )}
         <section className="mb-10">
-          <div className="flex items-baseline justify-between mb-5">
-            <h2 className="font-syne font-bold text-[1.2rem]">Popular</h2>
-          </div>
+          <h2 className="font-syne font-bold text-[1.2rem] mb-5">Action</h2>
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3 md:gap-5">
-            {popularCards.slice(1).map((m) => <UnifiedMangaCard key={m.id} manga={m} />)}
+            {toCard(action).map((m) => <UnifiedMangaCard key={m.id} manga={m} />)}
           </div>
         </section>
         <NativeBanner />
-        {recentCards.length > 0 && (
-          <section className="mb-10">
-            <div className="flex items-baseline justify-between mb-5">
-              <h2 className="font-syne font-bold text-[1.2rem]">Recently Updated</h2>
-            </div>
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3 md:gap-5">
-              {recentCards.map((m) => <UnifiedMangaCard key={m.id} manga={m} />)}
-            </div>
-          </section>
-        )}
+        <section className="mb-10">
+          <h2 className="font-syne font-bold text-[1.2rem] mb-5">Romance</h2>
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3 md:gap-5">
+            {toCard(romance).map((m) => <UnifiedMangaCard key={m.id} manga={m} />)}
+          </div>
+        </section>
+        <section className="mb-10">
+          <h2 className="font-syne font-bold text-[1.2rem] mb-5">Horror</h2>
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3 md:gap-5">
+            {toCard(horror).map((m) => <UnifiedMangaCard key={m.id} manga={m} />)}
+          </div>
+        </section>
+        <section className="mb-10">
+          <h2 className="font-syne font-bold text-[1.2rem] mb-5">Comedy</h2>
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3 md:gap-5">
+            {toCard(comedy).map((m) => <UnifiedMangaCard key={m.id} manga={m} />)}
+          </div>
+        </section>
       </div>
     )
   }
