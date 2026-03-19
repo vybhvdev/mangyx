@@ -25,7 +25,6 @@ export function MangaCard({ manga, priority = false, showLangBadge = false }: Pr
             sizes="(max-width: 768px) 33vw, (max-width: 1200px) 16vw, 200px"
             className="object-cover transition-transform duration-400 ease-out group-hover:scale-[1.04]"
             priority={priority}
-            onError={(e) => { e.currentTarget.style.display = 'none' }}
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center bg-ink-200">
