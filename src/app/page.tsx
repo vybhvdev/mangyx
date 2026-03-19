@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers'
 import { getPopularManga, getRecentlyUpdated, getInternationalManga, getTitle, getCoverUrl } from '@/lib/mangadex'
 import { searchManga as consumetSearch } from '@/lib/consumet'
+import { getMangaInfo } from '@/lib/consumet'
 import { MangaCard } from '@/components/ui/MangaCard'
 import { NativeBanner } from '@/components/ui/NativeBanner'
 import Image from 'next/image'
@@ -11,19 +12,19 @@ export default async function HomePage() {
   const provider = cookieStore.get('provider')?.value ?? 'mangadex'
 
   if (provider === 'mangapill') {
-    const queries = ['one piece', 'naruto', 'bleach', 'dragon ball', 'attack on titan', 'demon slayer', 'jujutsu kaisen', 'black clover', 'solo leveling', 'tower of god', 'vinland saga', 'berserk']
-    const results = await Promise.all(queries.map(q => consumetSearch(q).catch(() => [])))
-    const all = results.flat()
-    const seen = new Set<string>()
-    const unique = all.filter(m => { if (seen.has(m.id)) return false; seen.add(m.id); return true })
-    const toCard = (items: typeof unique) => items.map((m) => ({
+    const [popular, recent] = await Promise.all([
+      consumetSearch('popular manga').catch(() => []),
+      consumetSearch('latest manga').catch(() => []),
+    ])
+    const toCard = (items: typeof popular) => items.map((m) => ({
       id: m.id, source: 'consumet' as const,
       title: m.title, coverUrl: m.image,
       description: '', status: '', tags: [],
     }))
-    const cards = toCard(unique)
+    const popularCards = toCard(popular)
+    const recentCards = toCard(recent)
     const { UnifiedMangaCard } = await import('@/components/ui/UnifiedMangaCard')
-    const featured = cards[0]
+    const featured = popularCards[0] ?? { id: '2/one-piece', title: 'Attack on Titan', coverUrl: '', source: 'consumet' as const, description: '', status: '', tags: [] }
     return (
       <div className="max-w-[1200px] mx-auto px-4 md:px-8">
         {featured && (
@@ -54,25 +55,25 @@ export default async function HomePage() {
             </div>
           </section>
         )}
-        {/* Popular — 3 cards */}
         <section className="mb-10">
           <div className="flex items-baseline justify-between mb-5">
             <h2 className="font-syne font-bold text-[1.2rem]">Popular</h2>
           </div>
-          <div className="grid grid-cols-3 gap-3 md:gap-5">
-            {cards.slice(1, 4).map((m) => <UnifiedMangaCard key={m.id} manga={m} />)}
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3 md:gap-5">
+            {popularCards.slice(1).map((m) => <UnifiedMangaCard key={m.id} manga={m} />)}
           </div>
         </section>
         <NativeBanner />
-        {/* Recently Updated — 12 cards */}
-        <section className="mb-10">
-          <div className="flex items-baseline justify-between mb-5">
-            <h2 className="font-syne font-bold text-[1.2rem]">Recently Updated</h2>
-          </div>
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3 md:gap-5">
-            {cards.slice(4, 16).map((m) => <UnifiedMangaCard key={m.id} manga={m} />)}
-          </div>
-        </section>
+        {recentCards.length > 0 && (
+          <section className="mb-10">
+            <div className="flex items-baseline justify-between mb-5">
+              <h2 className="font-syne font-bold text-[1.2rem]">Recently Updated</h2>
+            </div>
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3 md:gap-5">
+              {recentCards.map((m) => <UnifiedMangaCard key={m.id} manga={m} />)}
+            </div>
+          </section>
+        )}
       </div>
     )
   }
