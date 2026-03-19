@@ -11,7 +11,7 @@ export default async function HomePage() {
   const provider = cookieStore.get('provider')?.value ?? 'mangadex'
 
   if (provider === 'mangapill') {
-    const queries = ['one piece', 'naruto', 'bleach', 'dragon ball', 'attack on titan', 'demon slayer', 'jujutsu kaisen', 'black clover']
+    const queries = ['one piece', 'naruto', 'bleach', 'dragon ball', 'attack on titan', 'demon slayer', 'jujutsu kaisen', 'black clover', 'solo leveling', 'tower of god', 'vinland saga', 'berserk']
     const results = await Promise.all(queries.map(q => consumetSearch(q).catch(() => [])))
     const all = results.flat()
     const seen = new Set<string>()
@@ -54,21 +54,23 @@ export default async function HomePage() {
             </div>
           </section>
         )}
+        {/* Popular — 3 cards */}
         <section className="mb-10">
           <div className="flex items-baseline justify-between mb-5">
             <h2 className="font-syne font-bold text-[1.2rem]">Popular</h2>
           </div>
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3 md:gap-5">
-            {cards.slice(1, 13).map((m) => <UnifiedMangaCard key={m.id} manga={m} />)}
+          <div className="grid grid-cols-3 gap-3 md:gap-5">
+            {cards.slice(1, 4).map((m) => <UnifiedMangaCard key={m.id} manga={m} />)}
           </div>
         </section>
         <NativeBanner />
+        {/* Recently Updated — 12 cards */}
         <section className="mb-10">
           <div className="flex items-baseline justify-between mb-5">
-            <h2 className="font-syne font-bold text-[1.2rem]">More Titles</h2>
+            <h2 className="font-syne font-bold text-[1.2rem]">Recently Updated</h2>
           </div>
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3 md:gap-5">
-            {cards.slice(13).map((m) => <UnifiedMangaCard key={m.id} manga={m} />)}
+            {cards.slice(4, 16).map((m) => <UnifiedMangaCard key={m.id} manga={m} />)}
           </div>
         </section>
       </div>
