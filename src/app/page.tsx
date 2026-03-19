@@ -11,17 +11,19 @@ export default async function HomePage() {
   const provider = cookieStore.get('provider')?.value ?? 'mangadex'
 
   if (provider === 'mangapill') {
-    const [popular, recent] = await Promise.all([
-      consumetSearch('popular manga').catch(() => []),
-      consumetSearch('action manga').catch(() => []),
-    ])
-    const toCard = (results: typeof popular) => results.slice(0, 12).map((m) => ({
+    const queries = ['one piece', 'naruto', 'bleach', 'dragon ball', 'attack on titan', 'demon slayer', 'jujutsu kaisen', 'black clover']
+    const results = await Promise.all(queries.map(q => consumetSearch(q).catch(() => [])))
+    const all = results.flat()
+    const seen = new Set<string>()
+    const unique = all.filter(m => { if (seen.has(m.id)) return false; seen.add(m.id); return true })
+    const toCard = (items: typeof unique) => items.map((m) => ({
       id: m.id, source: 'consumet' as const,
       title: m.title, coverUrl: m.image,
       description: '', status: '', tags: [],
     }))
+    const cards = toCard(unique)
     const { UnifiedMangaCard } = await import('@/components/ui/UnifiedMangaCard')
-    const featured = toCard(popular)[0]
+    const featured = cards[0]
     return (
       <div className="max-w-[1200px] mx-auto px-4 md:px-8">
         {featured && (
@@ -57,16 +59,16 @@ export default async function HomePage() {
             <h2 className="font-syne font-bold text-[1.2rem]">Popular</h2>
           </div>
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3 md:gap-5">
-            {toCard(popular).slice(1).map((m) => <UnifiedMangaCard key={m.id} manga={m} />)}
+            {cards.slice(1, 13).map((m) => <UnifiedMangaCard key={m.id} manga={m} />)}
           </div>
         </section>
         <NativeBanner />
         <section className="mb-10">
           <div className="flex items-baseline justify-between mb-5">
-            <h2 className="font-syne font-bold text-[1.2rem]">Action</h2>
+            <h2 className="font-syne font-bold text-[1.2rem]">More Titles</h2>
           </div>
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3 md:gap-5">
-            {toCard(recent).map((m) => <UnifiedMangaCard key={m.id} manga={m} />)}
+            {cards.slice(13).map((m) => <UnifiedMangaCard key={m.id} manga={m} />)}
           </div>
         </section>
       </div>
