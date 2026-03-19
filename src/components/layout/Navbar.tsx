@@ -1,9 +1,9 @@
 'use client'
-
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { NavDrawer } from './NavDrawer'
+import { DarkModeToggle } from '@/components/ui/DarkModeToggle'
 
 export function Navbar() {
   const pathname = usePathname()
@@ -14,8 +14,6 @@ export function Navbar() {
   useEffect(() => {
     const match = document.cookie.match(/provider=([^;]+)/)
     if (match?.[1]) setProvider(match[1])
-
-    // Listen for provider changes via cookie polling
     const interval = setInterval(() => {
       const m = document.cookie.match(/provider=([^;]+)/)
       if (m?.[1]) setProvider(m[1])
@@ -73,6 +71,9 @@ export function Navbar() {
                        focus:border-ink-300 focus:bg-paper placeholder:text-ink-400"
           />
         </div>
+
+        {/* Dark mode toggle */}
+        <DarkModeToggle />
 
         {/* Hamburger */}
         <NavDrawer />

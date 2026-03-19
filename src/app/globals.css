@@ -8,25 +8,56 @@
   --font-syne: 'Syne', sans-serif;
   --font-cormorant: 'Cormorant Garamond', Georgia, serif;
   --font-dm-mono: 'DM Mono', monospace;
+  --bg: #f5f2ec;
+  --fg: #221e19;
+  --paper: #f5f2ec;
+  --onyx: #111010;
+}
+
+html.dark {
+  --bg: #111010;
+  --fg: #f5f2ec;
+  --paper: #1a1a1a;
+  --onyx: #f5f2ec;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-
 html { scroll-behavior: smooth; }
 
 body {
-  background: #f5f2ec;
-  color: #221e19;
+  background: var(--bg);
+  color: var(--fg);
   font-family: var(--font-cormorant);
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
+  transition: background 0.3s, color 0.3s;
 }
 
+html.dark body { background: #111010; color: #f5f2ec; }
+html.dark .bg-paper { background: #1a1a1a !important; }
+html.dark .bg-ink-200 { background: #2a2a2a !important; }
+html.dark .bg-ink-50 { background: #1a1a1a !important; }
+html.dark .bg-ink-100 { background: #222 !important; }
+html.dark .text-onyx { color: #f5f2ec !important; }
+html.dark .text-ink-700 { color: #c5bfb0 !important; }
+html.dark .text-ink-600 { color: #a89e8c !important; }
+html.dark .text-ink-500 { color: #8f8270 !important; }
+html.dark .text-ink-400 { color: #756a5a !important; }
+html.dark .border-ink-200 { border-color: #2a2a2a !important; }
+html.dark .border-ink-100 { border-color: #222 !important; }
+html.dark .border-ink-300 { border-color: #333 !important; }
+html.dark nav { background: #111010 !important; border-color: #2a2a2a !important; }
+html.dark .btn-secondary { border-color: #333; color: #c5bfb0; }
+html.dark .btn-secondary:hover { background: #222; }
+
 ::selection { background: #111010; color: #f5f2ec; }
+html.dark ::selection { background: #f5f2ec; color: #111010; }
 
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: #f5f2ec; }
 ::-webkit-scrollbar-thumb { background: #c5bfb0; border-radius: 2px; }
+html.dark ::-webkit-scrollbar-track { background: #111010; }
+html.dark ::-webkit-scrollbar-thumb { background: #333; }
 
 @layer components {
   .btn-primary {
@@ -35,7 +66,6 @@ body {
            cursor-pointer border-none transition-colors duration-150;
   }
   .btn-primary:hover { @apply bg-ink-900; }
-
   .btn-secondary {
     @apply inline-flex items-center gap-2
            border border-ink-300 text-ink-700
@@ -44,36 +74,24 @@ body {
            cursor-pointer bg-transparent transition-all duration-150;
   }
   .btn-secondary:hover { @apply bg-ink-100; }
-
   .label-mono {
     @apply font-mono text-[0.65rem] tracking-[0.2em] uppercase text-ink-400;
   }
-
   .tag {
-    @apply font-mono text-[9px] tracking-[0.15em] uppercase
-           border border-ink-300 text-ink-500 px-2 py-0.5;
+    @apply font-mono text-[0.6rem] tracking-[0.12em] uppercase
+           border border-ink-200 text-ink-500 px-2 py-0.5;
   }
-
   .card-title {
-    @apply mt-2 font-syne text-[0.78rem] font-semibold text-onyx
-           leading-snug line-clamp-2 transition-colors duration-150;
+    @apply font-syne text-[0.78rem] font-semibold text-onyx
+           leading-snug line-clamp-2 mt-2 transition-colors;
+  }
+  .skeleton {
+    @apply bg-ink-100 animate-pulse rounded-none;
   }
 }
 
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(16px); }
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-.animate-fade-up   { animation: fadeUp 0.4s ease both; }
-.animate-fade-up-2 { animation: fadeUp 0.4s 0.08s ease both; }
-.animate-fade-up-3 { animation: fadeUp 0.4s 0.16s ease both; }
-
-@keyframes shimmer {
-  0%   { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-.skeleton {
-  background: linear-gradient(90deg, #eeece6 25%, #ddd9ce 50%, #eeece6 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.4s infinite;
-}
+.animate-fade-up { animation: fade-up 0.4s ease both; }
