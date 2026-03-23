@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { getMangaInfo } from '@/lib/consumet'
 
@@ -10,19 +11,34 @@ export default async function ConsumetMangaPage({ params }: Props) {
   if (!manga) notFound()
 
   const firstChapter = manga.chapters?.[manga.chapters.length - 1]
+  const coverUrl = manga.image
+    ? `/api/proxy?url=${encodeURIComponent(manga.image)}`
+    : null
 
   return (
     <div className="max-w-[1200px] mx-auto px-8 pb-16 animate-fade-up">
       <div className="grid grid-cols-[140px_1fr] md:grid-cols-[220px_1fr] gap-8 md:gap-12 py-12 border-b border-ink-200 mb-10">
 
-        {/* Cover placeholder — CDN blocks hotlinking */}
         <div className="relative aspect-[3/4] overflow-hidden bg-ink-200 flex flex-col items-center justify-center gap-2">
-          <span className="font-syne font-black text-[2rem] text-ink-400">
-            {manga.title?.charAt(0) ?? '?'}
-          </span>
-          <span className="font-mono text-[0.55rem] tracking-[0.15em] uppercase text-ink-300 text-center px-2">
-            Alt Source
-          </span>
+          {coverUrl ? (
+            <Image
+              src={coverUrl}
+              alt={manga.title ?? ''}
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 140px, 220px"
+              priority
+            />
+          ) : (
+            <>
+              <span className="font-syne font-black text-[2rem] text-ink-400">
+                {manga.title?.charAt(0) ?? '?'}
+              </span>
+              <span className="font-mono text-[0.55rem] tracking-[0.15em] uppercase text-ink-300 text-center px-2">
+                Alt Source
+              </span>
+            </>
+          )}
         </div>
 
         <div>
