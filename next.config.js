@@ -3,7 +3,12 @@ const nextConfig = {
   eslint: { ignoreDuringBuilds: true },
   swcMinify: false,
   images: {
-    remotePatterns: [{ protocol: 'https', hostname: 'uploads.mangadex.org', pathname: '/covers/**' }],
+    remotePatterns: [
+      { protocol: 'https', hostname: 'uploads.mangadex.org', pathname: '/covers/**' },
+      { protocol: 'https', hostname: 'cdn.readdetectiveconan.com' },
+      { protocol: 'https', hostname: '**.mangapill.com' },
+      { protocol: 'https', hostname: '**.cdnpic.net' },
+    ],
   },
 }
 module.exports = nextConfig
