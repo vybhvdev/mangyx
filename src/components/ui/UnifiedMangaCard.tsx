@@ -5,8 +5,9 @@ import type { UnifiedManga } from '@/lib/manga'
 interface Props { manga: UnifiedManga }
 
 export function UnifiedMangaCard({ manga }: Props) {
+  const coverParam = manga.coverUrl ? `&cover=${encodeURIComponent(manga.coverUrl)}` : ''
   const href = manga.source === 'consumet'
-    ? `/manga/consumet/${encodeURIComponent(manga.id)}`
+    ? `/manga/consumet/${encodeURIComponent(manga.id)}${coverParam}`
     : `/manga/${manga.id}`
 
   const imgSrc = manga.source === 'consumet'

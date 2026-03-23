@@ -3,16 +3,19 @@ import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { getMangaInfo } from '@/lib/consumet'
 
-interface Props { params: { id: string } }
+interface Props {
+  params: { id: string }
+  searchParams: { cover?: string }
+}
 
-export default async function ConsumetMangaPage({ params }: Props) {
+export default async function ConsumetMangaPage({ params, searchParams }: Props) {
   const mangaId = decodeURIComponent(params.id)
   const manga = await getMangaInfo(mangaId).catch(() => null)
   if (!manga) notFound()
 
   const firstChapter = manga.chapters?.[manga.chapters.length - 1]
-  const coverUrl = manga.image
-    ? `/api/proxy?url=${encodeURIComponent(manga.image)}`
+  const coverUrl = searchParams.cover
+    ? `/api/proxy?url=${encodeURIComponent(searchParams.cover)}`
     : null
 
   return (
