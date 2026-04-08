@@ -92,133 +92,154 @@ export default async function MangaPage({ params, searchParams }: Props) {
 
   return (
     <div className="min-h-screen pb-20">
-      <div className="max-w-7xl mx-auto px-4 md:px-8 py-8 md:py-16">
-        <div className="flex flex-col md:grid md:grid-cols-[300px_1fr] gap-12 items-start animate-fade-up">
-          {/* Cover Art */}
-          <div className="relative w-full aspect-[3/4] rounded-none overflow-hidden border border-border shadow-xl bg-surface group">
-            {cover && <Image src={cover} alt={title} fill className="object-cover transition-transform duration-700 group-hover:scale-105" priority sizes="300px" />}
-          </div>
-
-          {/* Info */}
-          <div className="flex-1">
-            <div className="flex flex-wrap gap-3 mb-6">
-              {status && <span className="px-3 py-1 bg-accent text-background text-[9px] font-bold uppercase tracking-[0.2em]">{status}</span>}
-              {year && <span className="px-3 py-1 border border-border text-text-muted text-[9px] font-bold uppercase tracking-[0.2em]">{year}</span>}
-              <span className="px-3 py-1 border border-border text-text-muted text-[9px] font-bold uppercase tracking-[0.2em]">{origLang.toUpperCase()}</span>
-            </div>
-
-            <h1 className="font-syne font-black text-4xl md:text-7xl text-foreground mb-8 leading-[0.95] tracking-tight">
-              {title}
-            </h1>
-
-            <p className="font-cormorant text-xl md:text-2xl text-foreground/80 leading-relaxed italic mb-8 max-w-2xl">
-              {desc.slice(0, 300)}{desc.length > 300 ? '...' : ''}
-            </p>
-
-            <div className="flex flex-wrap gap-4 mb-12">
-              {progressRow ? (
-                <Link href={`/reader/${progressRow.chapter_id}?manga=${manga.id}`} className="btn-primary">
-                  Continue Ch. {progressRow.chapter_num}
-                </Link>
-              ) : firstChapter ? (
-                <Link href={`/reader/${firstChapter.id}?manga=${manga.id}`} className="btn-primary">
-                  Start Reading
-                </Link>
-              ) : null}
-              <BookmarkButton mangaId={manga.id} mangaTitle={title} coverUrl={cover} mangaStatus={status ?? ''} initialBookmarked={false} />
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              {tags.map((t) => (
-                <Link key={t.id} href={`/browse?tag=${t.id}`} className="chip">
-                  {t.attributes?.name?.en}
-                </Link>
-              ))}
+      {/* Hero Section */}
+      <div className="relative h-[450px] md:h-[550px] overflow-hidden">
+        {cover && (
+          <Image src={cover} alt="" fill className="object-cover blur-2xl opacity-30 scale-110" priority />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
+        
+        <div className="absolute inset-0 flex items-end">
+          <div className="max-w-7xl mx-auto px-4 md:px-8 w-full pb-12">
+            <div className="flex flex-col md:flex-row gap-8 items-center md:items-end animate-fade-up">
+              <div className="relative w-[180px] md:w-[240px] aspect-[3/4] shrink-0 rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-surface">
+                {cover && <Image src={cover} alt={title} fill className="object-cover" priority sizes="240px" />}
+              </div>
+              <div className="flex-1 text-center md:text-left">
+                <div className="flex flex-wrap justify-center md:justify-start gap-2 mb-4">
+                  {status && <span className="px-3 py-1 bg-accent/20 text-accent rounded-full text-[10px] font-bold uppercase tracking-widest border border-accent/20">{status}</span>}
+                  {year && <span className="px-3 py-1 bg-white/5 text-white/60 rounded-full text-[10px] font-bold uppercase tracking-widest border border-white/5">{year}</span>}
+                  <span className="px-3 py-1 bg-white/5 text-white/60 rounded-full text-[10px] font-bold uppercase tracking-widest border border-white/5">{origLang.toUpperCase()}</span>
+                </div>
+                <h1 className="font-syne font-black text-3xl md:text-6xl text-white mb-6 leading-tight tracking-tight">
+                  {title}
+                </h1>
+                <div className="flex flex-wrap justify-center md:justify-start gap-3">
+                  {progressRow ? (
+                    <Link href={`/reader/${progressRow.chapter_id}?manga=${manga.id}`} className="btn-primary py-4 px-10">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                      Continue Ch. {progressRow.chapter_num}
+                    </Link>
+                  ) : firstChapter ? (
+                    <Link href={`/reader/${firstChapter.id}?manga=${manga.id}`} className="btn-primary py-4 px-10">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 3l14 9-14 9V3z" fill="currentColor"/></svg>
+                      Start Reading
+                    </Link>
+                  ) : null}
+                  <BookmarkButton mangaId={manga.id} mangaTitle={title} coverUrl={cover} mangaStatus={status ?? ''} initialBookmarked={false} />
+                </div>
+              </div>
             </div>
           </div>
         </div>
+      </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-16 mt-20 pt-16 border-t border-border">
-          {/* Chapters List */}
+      <div className="max-w-7xl mx-auto px-4 md:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-12 mt-12">
+          {/* Main Content */}
           <div>
-            <div className="flex items-baseline justify-between mb-10">
-              <h2 className="font-syne font-extrabold text-2xl tracking-tight uppercase">Chapters</h2>
-              <span className="font-mono text-[10px] font-bold text-text-muted tracking-widest uppercase">{total} total</span>
-            </div>
-
-            <div className="grid gap-1">
-              {chapters.length === 0 ? (
-                <div className="p-12 text-center border border-dashed border-border">
-                  <p className="text-text-muted font-bold text-[10px] uppercase tracking-widest">No chapters available</p>
-                </div>
-              ) : (
-                chapters.map((ch) => {
-                  const isCurrent = progressRow?.chapter_id === ch.id
-                  return (
-                    <Link key={ch.id} href={`/reader/${ch.id}?manga=${manga.id}`}
-                      className={`group flex items-center justify-between p-4 border-b border-border transition-all hover:bg-surface ${isCurrent ? 'bg-surface' : ''}`}>
-                      <div className="flex flex-col gap-1 min-w-0">
-                        <span className={`font-bold text-sm truncate ${isCurrent ? 'text-accent' : 'text-foreground'}`}>
-                          Chapter {ch.attributes.chapter}
-                          {ch.attributes.title && <span className="font-medium opacity-50 ml-2">— {ch.attributes.title}</span>}
-                        </span>
-                        <span className="text-[9px] font-bold text-text-muted uppercase tracking-widest">
-                          {getScanlationGroup(ch) || 'Unknown Group'}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-6 shrink-0 ml-4">
-                        {isCurrent && (
-                          <span className="text-[9px] font-black uppercase tracking-widest text-accent">last read</span>
-                        )}
-                        <span className="text-[10px] font-medium text-text-muted font-mono">{fmtRelative(ch.attributes.publishAt)}</span>
-                      </div>
-                    </Link>
-                  )
-                })
-              )}
-            </div>
-
-            {totalPages > 1 && (
-              <div className="flex items-center justify-center gap-4 mt-12">
-                {page > 1 && (
-                  <Link href={`/manga/${manga.id}?page=${page - 1}`} className="btn-secondary">Prev</Link>
-                )}
-                <div className="flex gap-2">
-                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                    const p = page <= 3 ? i + 1 : page - 2 + i
-                    if (p > totalPages) return null
-                    return (
-                      <Link key={p} href={`/manga/${manga.id}?page=${p}`}
-                        className={`w-10 h-10 flex items-center justify-center font-bold text-[10px] transition-all border ${p === page ? 'bg-accent text-background border-accent' : 'border-border text-text-muted hover:text-foreground hover:border-accent'}`}>
-                        {p}
-                      </Link>
-                    )
-                  })}
-                </div>
-                {page < totalPages && (
-                  <Link href={`/manga/${manga.id}?page=${page + 1}`} className="btn-secondary">Next</Link>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Sidebar */}
-          <aside className="space-y-12">
-            <section>
-              <h2 className="font-syne font-extrabold text-xl tracking-tight uppercase mb-8">Recommendations</h2>
-              <div className="grid grid-cols-2 gap-4">
-                {related.slice(0, 4).map((m) => (
-                  <MangaCard key={m.id} manga={m} />
+            <section className="mb-12">
+              <h2 className="font-syne font-extrabold text-xl mb-4 tracking-tight">Synopsis</h2>
+              <p className="text-text-muted leading-relaxed text-base whitespace-pre-wrap">
+                {desc || 'No description available for this title.'}
+              </p>
+              <div className="flex flex-wrap gap-2 mt-6">
+                {tags.map((t) => (
+                  <Link key={t.id} href={`/browse?tag=${t.id}`} className="chip">
+                    {t.attributes?.name?.en}
+                  </Link>
                 ))}
               </div>
             </section>
-            
-            <section className="p-8 border border-border bg-surface/30">
-              <h3 className="font-syne font-bold text-sm uppercase tracking-widest mb-4">Note</h3>
-              <p className="font-cormorant text-base text-text-muted leading-relaxed">
-                Translations are provided by various scanlation groups. If you enjoy the series, please consider supporting the official release.
-              </p>
+
+            <section className="mb-12">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="font-syne font-extrabold text-xl tracking-tight uppercase">
+                  Chapters
+                  <span className="ml-3 text-xs font-bold text-text-muted tracking-widest uppercase">{total} total</span>
+                </h2>
+                {!hasEnglish && !isEnglish && (
+                  <span className="text-[10px] font-bold text-accent px-2 py-1 bg-accent-soft rounded-md uppercase tracking-wider">
+                    {LANG_LABELS[origLang] ?? origLang}
+                  </span>
+                )}
+              </div>
+
+              <div className="grid gap-2">
+                {chapters.length === 0 ? (
+                  <div className="p-12 text-center bg-surface rounded-2xl border border-dashed border-border">
+                    <p className="text-text-muted font-bold text-sm uppercase tracking-widest">No chapters available</p>
+                  </div>
+                ) : (
+                  chapters.map((ch) => {
+                    const isCurrent = progressRow?.chapter_id === ch.id
+                    return (
+                      <Link key={ch.id} href={`/reader/${ch.id}?manga=${manga.id}`}
+                        className={`group flex items-center justify-between p-4 rounded-xl border border-white/5 transition-all hover:bg-surface hover:border-accent/30 ${isCurrent ? 'bg-accent-soft border-accent/20' : 'bg-surface/30'}`}>
+                        <div className="flex flex-col gap-1 min-w-0">
+                          <span className={`font-bold text-sm truncate ${isCurrent ? 'text-accent' : 'text-foreground'}`}>
+                            Chapter {ch.attributes.chapter}
+                            {ch.attributes.title && <span className="font-medium opacity-60 ml-2">— {ch.attributes.title}</span>}
+                          </span>
+                          <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest">
+                            {getScanlationGroup(ch) || 'Unknown Group'}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-4 shrink-0 ml-4">
+                          {isCurrent && (
+                            <span className="text-[9px] font-black uppercase tracking-widest text-accent">last read</span>
+                          )}
+                          <span className="text-[11px] font-medium text-text-muted font-mono">{fmtRelative(ch.attributes.publishAt)}</span>
+                          <svg className="text-text-muted group-hover:text-accent transition-colors" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                        </div>
+                      </Link>
+                    )
+                  })
+                )}
+              </div>
+
+              {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-2 mt-8">
+                  {page > 1 && (
+                    <Link href={`/manga/${manga.id}?page=${page - 1}`} className="btn-secondary px-6 py-2">Prev</Link>
+                  )}
+                  <div className="flex gap-1">
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      const p = page <= 3 ? i + 1 : page - 2 + i
+                      if (p > totalPages) return null
+                      return (
+                        <Link key={p} href={`/manga/${manga.id}?page=${p}`}
+                          className={`w-10 h-10 flex items-center justify-center rounded-xl font-bold text-xs transition-all ${p === page ? 'bg-accent text-white' : 'bg-surface text-text-muted hover:text-foreground'}`}>
+                          {p}
+                        </Link>
+                      )
+                    })}
+                  </div>
+                  {page < totalPages && (
+                    <Link href={`/manga/${manga.id}?page=${page + 1}`} className="btn-secondary px-6 py-2">Next</Link>
+                  )}
+                </div>
+              )}
             </section>
+          </div>
+
+          {/* Sidebar */}
+          <aside>
+            {related.length > 0 && (
+              <div className="sticky top-24">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="font-syne font-extrabold text-xl tracking-tight uppercase">Recommendations</h2>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  {related.slice(0, 4).map((m) => (
+                    <MangaCard key={m.id} manga={m} />
+                  ))}
+                </div>
+                <Link href="/browse" className="btn-secondary w-full mt-6 py-3">
+                  Explore More
+                </Link>
+              </div>
+            )}
           </aside>
         </div>
       </div>

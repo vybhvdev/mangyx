@@ -21,7 +21,7 @@ export default async function ConsumetMangaPage({ params, searchParams }: Props)
   return (
     <div className="min-h-screen pb-20">
       {/* Hero Section */}
-      <div className="relative h-[400px] md:h-[500px] overflow-hidden">
+      <div className="relative h-[450px] md:h-[550px] overflow-hidden">
         {coverUrl && (
           <Image src={coverUrl} alt="" fill className="object-cover blur-2xl opacity-30 scale-110" priority />
         )}
@@ -62,7 +62,7 @@ export default async function ConsumetMangaPage({ params, searchParams }: Props)
       </div>
 
       <div className="max-w-7xl mx-auto px-4 md:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-12 mt-12">
           <div>
             <section className="mb-12">
               <h2 className="font-syne font-extrabold text-xl mb-4 tracking-tight">Synopsis</h2>
@@ -82,7 +82,7 @@ export default async function ConsumetMangaPage({ params, searchParams }: Props)
 
             <section className="mb-12">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="font-syne font-extrabold text-xl tracking-tight">
+                <h2 className="font-syne font-extrabold text-xl tracking-tight uppercase">
                   Chapters
                   <span className="ml-3 text-xs font-bold text-text-muted tracking-widest uppercase">{manga.chapters?.length ?? 0} total</span>
                 </h2>

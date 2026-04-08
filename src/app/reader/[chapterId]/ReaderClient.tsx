@@ -74,32 +74,36 @@ export function ReaderClient({ pages, mangaId, mangaTitle, coverUrl, source, cha
   const progress = Math.round((loaded / pages.length) * 100) || 0
 
   return (
-    <div className="bg-[#111010] min-h-screen text-[#f5f2ec] overflow-x-hidden select-none">
-      {/* Top Bar */}
-      <div className={`fixed top-0 left-0 right-0 z-50 transition-transform duration-300 ${uiVisible ? 'translate-y-0' : '-translate-y-full'}`}>
-        <div className="bg-[#111010]/95 backdrop-blur-xl border-b border-[#2a2a2a] px-4 md:px-8 h-[60px] flex items-center justify-between">
+    <div className="bg-black min-h-screen text-white overflow-x-hidden select-none">
+      {/* Liquid Glass Top Bar */}
+      <div className={`fixed top-0 left-0 right-0 z-50 transition-transform duration-500 ${uiVisible ? 'translate-y-0' : '-translate-y-full'}`}>
+        <div className="bg-background/60 backdrop-blur-2xl border-b border-white/5 px-4 md:px-8 h-[64px] flex items-center justify-between shadow-2xl">
           <div className="flex items-center gap-4">
             <Link
               href={mangaId ? `/manga/${mangaId}${source === 'consumet' ? `?source=consumet` : ''}` : '/'}
-              className="p-2 hover:bg-white/5 rounded-none transition-colors"
+              className="p-2.5 hover:bg-white/10 rounded-full transition-all active:scale-90"
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
             </Link>
             <div className="hidden sm:block">
-              <h2 className="text-[11px] font-bold font-syne uppercase tracking-widest truncate max-w-[300px]">{mangaTitle}</h2>
-              <p className="text-[9px] font-bold text-[#a89e8c] uppercase tracking-[0.2em]">Chapter {currentNum}</p>
+              <h2 className="text-sm font-bold truncate max-w-[200px] md:max-w-[400px] tracking-tight">{mangaTitle}</h2>
+              <p className="text-[10px] font-black text-accent uppercase tracking-[0.2em]">Chapter {currentNum}</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4">
             <div className="text-right hidden xs:block">
-              <p className="text-[10px] font-bold font-mono tracking-widest">{loaded} / {pages.length}</p>
-              <div className="w-24 h-[1px] bg-white/10 mt-1 overflow-hidden">
-                <div className="h-full bg-[#f5f2ec] transition-all duration-300" style={{ width: `${progress}%` }} />
+              <p className="text-[10px] font-black font-mono tracking-widest opacity-60">{loaded} / {pages.length}</p>
+              <div className="w-24 h-1 bg-white/10 rounded-full mt-1 overflow-hidden">
+                <div className="h-full bg-accent transition-all duration-500 ease-out" style={{ width: `${progress}%` }} />
               </div>
             </div>
-            <button onClick={toggleFullscreen} className="p-2 hover:bg-white/5 transition-colors">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg>
+            <button onClick={toggleFullscreen} className="p-2.5 hover:bg-white/10 rounded-full transition-all active:scale-90 text-white/80">
+              {isFullscreen ? (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M8 3v3a2 2 0 01-2 2H3m18 0h-3a2 2 0 01-2-2V3m0 18v-3a2 2 0 012-2h3M3 16h3a2 2 0 012 2v3"/></svg>
+              ) : (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg>
+              )}
             </button>
           </div>
         </div>
@@ -108,27 +112,30 @@ export function ReaderClient({ pages, mangaId, mangaTitle, coverUrl, source, cha
       {/* Tap Zones */}
       {!uiVisible && (
         <>
-          <div className="fixed top-0 left-0 bottom-0 w-[25%] z-40" onClick={() => window.scrollTo({ top: window.scrollY - window.innerHeight * 0.8, behavior: 'smooth' })} />
-          <div className="fixed top-0 right-0 bottom-0 w-[25%] z-40" onClick={() => window.scrollTo({ top: window.scrollY + window.innerHeight * 0.8, behavior: 'smooth' })} />
+          <div className="fixed top-0 left-0 bottom-0 w-[30%] z-40" onClick={() => window.scrollTo({ top: window.scrollY - window.innerHeight * 0.8, behavior: 'smooth' })} />
+          <div className="fixed top-0 right-0 bottom-0 w-[30%] z-40" onClick={() => window.scrollTo({ top: window.scrollY + window.innerHeight * 0.8, behavior: 'smooth' })} />
           <div className="fixed inset-0 z-30" onClick={toggleUI} />
         </>
       )}
 
-      {/* Pages */}
-      <div className={`flex flex-col items-center pt-[60px] pb-[80px] transition-all duration-300 ${!uiVisible ? 'pt-0 pb-0' : ''}`} onClick={uiVisible ? toggleUI : undefined}>
+      {/* Pages Container */}
+      <div className={`flex flex-col items-center pt-[64px] pb-[80px] transition-all duration-500 ease-in-out ${!uiVisible ? 'pt-0 pb-0' : ''}`} onClick={uiVisible ? toggleUI : undefined}>
         {pages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center min-h-[80vh] gap-6 animate-fade-up">
-            <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#a89e8c]">No pages found</p>
-            <Link href={`/manga/${mangaId}`} className="btn-secondary border-white/10 text-white hover:bg-white/5">Back to Details</Link>
+          <div className="flex flex-col items-center justify-center min-h-[80vh] gap-8 animate-fade-up">
+            <div className="w-24 h-24 rounded-full bg-accent/10 flex items-center justify-center text-accent animate-pulse">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0zM12 9v4M12 17h.01"/></svg>
+            </div>
+            <p className="text-xs font-black uppercase tracking-[0.3em] text-white/40">Transmission Error</p>
+            <Link href={`/manga/${mangaId}`} className="btn-secondary px-12 border-white/10 hover:bg-white/5">Return to Base</Link>
           </div>
         ) : (
-          <div className="w-full max-w-[900px] flex flex-col gap-1">
+          <div className="w-full max-w-[1000px] flex flex-col gap-1.5 px-0 md:px-4">
             {proxied.map((src, i) => (
-              <div key={i} className="relative min-h-[400px] bg-white/5 flex items-center justify-center">
+              <div key={i} className="relative min-h-[400px] bg-white/5 flex items-center justify-center group overflow-hidden">
                 <img
                   src={src}
                   alt={`Page ${i + 1}`}
-                  className="w-full h-auto block transition-opacity duration-700"
+                  className="w-full h-auto block transition-all duration-700 ease-out"
                   loading={i < 3 ? 'eager' : 'lazy'}
                   onLoad={(e) => {
                     e.currentTarget.style.opacity = '1'
@@ -141,8 +148,8 @@ export function ReaderClient({ pages, mangaId, mangaTitle, coverUrl, source, cha
                 />
                 {i >= loaded && (
                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
-                    <div className="w-6 h-6 border border-white/10 border-t-white rounded-full animate-spin" />
-                    <span className="text-[9px] font-bold text-[#a89e8c] uppercase tracking-[0.2em]">Loading {i + 1}</span>
+                    <div className="w-10 h-10 border-2 border-accent/20 border-t-accent rounded-full animate-spin" />
+                    <span className="text-[10px] font-black text-accent/40 uppercase tracking-[0.2em]">Buffering {i + 1}</span>
                   </div>
                 )}
               </div>
@@ -151,37 +158,37 @@ export function ReaderClient({ pages, mangaId, mangaTitle, coverUrl, source, cha
         )}
       </div>
 
-      {/* Navigation */}
-      <div className="max-w-[900px] mx-auto px-4 py-20">
+      {/* Navigation & Ads */}
+      <div className="max-w-[1000px] mx-auto px-4 py-24">
         <ReaderBannerAd />
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-16">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-20">
           {prevChapter ? (
-            <button onClick={() => navigate(1)} className="group border border-white/10 p-8 flex flex-col items-center gap-2 hover:bg-white/5 transition-all">
-              <span className="text-[9px] font-bold uppercase tracking-[0.3em] text-[#a89e8c]">Previous</span>
-              <span className="font-syne font-bold text-sm tracking-widest uppercase">Chapter {prevChapter.num}</span>
+            <button onClick={() => navigate(1)} className="group bg-surface/30 border border-white/5 p-10 rounded-[2.5rem] flex flex-col items-center gap-3 hover:bg-surface/50 transition-all active:scale-95">
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 group-hover:text-accent transition-colors">Previous Data</span>
+              <span className="font-syne font-black text-lg tracking-tight uppercase">Chapter {prevChapter.num}</span>
             </button>
-          ) : <div className="border border-white/5 p-8 flex items-center justify-center text-[9px] font-bold uppercase tracking-[0.3em] text-[#a89e8c] opacity-30">First Chapter</div>}
+          ) : <div className="bg-white/5 p-10 rounded-[2.5rem] flex items-center justify-center text-[10px] font-black uppercase tracking-[0.3em] text-white/20">Initial Chapter</div>}
           
           {nextChapter ? (
-            <button onClick={() => navigate(-1)} className="group bg-[#f5f2ec] text-[#111010] p-8 flex flex-col items-center gap-2 hover:opacity-90 transition-all">
-              <span className="text-[9px] font-bold uppercase tracking-[0.3em] opacity-60">Next Up</span>
-              <span className="font-syne font-bold text-sm tracking-widest uppercase">Chapter {nextChapter.num}</span>
+            <button onClick={() => navigate(-1)} className="group bg-accent text-white p-10 rounded-[2.5rem] flex flex-col items-center gap-3 hover:scale-[1.02] shadow-2xl shadow-accent/20 transition-all active:scale-95">
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/70">Next Archive</span>
+              <span className="font-syne font-black text-lg tracking-tight uppercase">Chapter {nextChapter.num}</span>
             </button>
-          ) : <div className="border border-[#f5f2ec]/20 p-8 flex items-center justify-center text-[9px] font-bold uppercase tracking-[0.3em] text-[#f5f2ec] opacity-30">Latest Chapter</div>}
+          ) : <div className="bg-accent/10 border border-accent/20 p-10 rounded-[2.5rem] flex items-center justify-center text-[10px] font-black uppercase tracking-[0.3em] text-accent/40">Latest Release</div>}
         </div>
       </div>
 
-      {/* Progress Bar */}
-      <div className={`fixed bottom-0 left-0 right-0 z-50 transition-transform duration-300 ${uiVisible ? 'translate-y-0' : 'translate-y-full'}`}>
-        <div className="bg-[#111010]/95 backdrop-blur-xl border-t border-[#2a2a2a] px-6 py-5 flex items-center justify-center gap-10">
-          <Link href={`/manga/${mangaId}`} className="text-[#a89e8c] hover:text-white transition-colors">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+      {/* Liquid Glass Bottom Nav */}
+      <div className={`fixed bottom-0 left-0 right-0 z-50 transition-transform duration-500 ${uiVisible ? 'translate-y-0' : 'translate-y-full'}`}>
+        <div className="bg-background/60 backdrop-blur-2xl border-t border-white/5 px-6 py-6 flex items-center justify-between gap-10 shadow-[0_-20px_50px_rgba(0,0,0,0.5)]">
+          <Link href={`/manga/${mangaId}`} className="p-3 text-white/40 hover:text-white transition-all active:scale-90">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
           </Link>
-          <div className="flex-1 max-w-lg h-[1px] bg-white/10 relative">
-            <div className="absolute top-0 left-0 h-full bg-[#f5f2ec] transition-all duration-300" style={{ width: `${progress}%` }} />
+          <div className="flex-1 max-w-xl h-1.5 bg-white/10 rounded-full relative overflow-hidden">
+            <div className="absolute top-0 left-0 h-full bg-accent shadow-[0_0_15px_rgba(244,63,94,0.5)] transition-all duration-500 ease-out" style={{ width: `${progress}%` }} />
           </div>
-          <span className="text-[10px] font-mono font-bold text-[#a89e8c] w-12 text-right">{progress}%</span>
+          <span className="text-[11px] font-black font-mono text-white/60 w-12 text-right">{progress}%</span>
         </div>
       </div>
     </div>
