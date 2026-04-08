@@ -23,35 +23,32 @@ export function MangaCard({ manga, priority = false, showLangBadge = false }: Pr
             alt={title}
             fill
             sizes="(max-width: 768px) 33vw, (max-width: 1200px) 16vw, 200px"
-            className="object-cover transition-transform duration-500 group-hover:scale-110"
+            className="object-cover transition-transform duration-700 group-hover:scale-105"
             priority={priority}
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="font-syne font-bold text-2xl text-text-muted opacity-50">
-              {title.slice(0, 1).toUpperCase()}
+            <span className="font-syne font-bold text-2xl text-text-muted opacity-50 uppercase">
+              {title.slice(0, 1)}
             </span>
           </div>
         )}
         
         {/* Badges */}
-        <div className="absolute top-2 inset-x-2 flex justify-between items-start pointer-events-none">
+        <div className="absolute top-0 inset-x-0 flex justify-between items-start pointer-events-none">
           {status && (
-            <span className="px-2 py-0.5 bg-black/60 backdrop-blur-md rounded-lg text-[9px] font-bold uppercase tracking-wider text-white border border-white/10">
+            <span className="px-2 py-1 bg-accent text-background text-[8px] font-bold uppercase tracking-widest">
               {status}
             </span>
           )}
           {showLangBadge && manga.attributes?.originalLanguage && (
-            <span className="px-2 py-0.5 bg-accent/90 backdrop-blur-md rounded-lg text-[9px] font-bold uppercase tracking-wider text-white ml-auto">
+            <span className="px-2 py-1 bg-surface text-foreground text-[8px] font-bold uppercase tracking-widest ml-auto border-l border-b border-border">
               {manga.attributes.originalLanguage}
             </span>
           )}
         </div>
-
-        {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       </div>
-      <h3 className="mt-3 font-semibold text-sm line-clamp-2 text-foreground group-hover:text-accent transition-colors duration-200">
+      <h3 className="mt-4 font-syne font-bold text-xs uppercase tracking-tight leading-tight line-clamp-2 text-foreground group-hover:text-accent transition-colors duration-200">
         {title}
       </h3>
     </Link>
@@ -62,8 +59,8 @@ export function MangaCardSkeleton() {
   return (
     <div className="animate-pulse">
       <div className="card-3-4 skeleton" />
-      <div className="h-4 mt-3 bg-surface rounded-full w-4/5" />
-      <div className="h-3 mt-2 bg-surface rounded-full w-2/3 opacity-50" />
+      <div className="h-3 mt-4 bg-surface w-4/5" />
+      <div className="h-3 mt-2 bg-surface w-2/3 opacity-50" />
     </div>
   )
 }

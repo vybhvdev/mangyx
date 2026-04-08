@@ -1,6 +1,7 @@
 import type { Config } from 'tailwindcss'
 
 const config: Config = {
+  darkMode: 'class',
   content: [
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
@@ -13,15 +14,17 @@ const config: Config = {
         foreground: 'var(--foreground)',
         surface: 'var(--surface)',
         'surface-hover': 'var(--surface-hover)',
-        accent: '#f43f5e',
-        'accent-hover': '#e11d48',
-        'accent-soft': 'rgba(244, 63, 94, 0.1)',
+        accent: '#221e19', // Default to editorial ink color
+        'accent-foreground': '#f5f2ec',
+        'accent-hover': '#111010',
+        'accent-soft': 'rgba(34, 30, 25, 0.05)',
         border: 'var(--border)',
         'text-muted': 'var(--text-muted)',
       },
       fontFamily: {
         syne: ['Syne', 'sans-serif'],
         sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+        cormorant: ['Cormorant Garamond', 'serif'],
       },
     },
   },

@@ -32,10 +32,10 @@ export function Navbar() {
   }
 
   return (
-    <nav className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-white/5 px-4 md:px-8">
+    <nav className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border px-4 md:px-8">
       <div className="max-w-7xl mx-auto flex items-center gap-4 h-[64px]">
 
-        <Link href="/" className="font-syne font-black text-xl tracking-tighter text-accent flex items-center gap-1 no-underline">
+        <Link href="/" className="font-syne font-black text-xl tracking-tighter text-foreground flex items-center gap-1 no-underline">
           MAN<span>GYX</span>
         </Link>
 
@@ -45,8 +45,8 @@ export function Navbar() {
             <li key={href}>
               <Link
                 href={href}
-                className={`px-4 py-2 rounded-full font-bold text-xs tracking-widest uppercase transition-all
-                  ${pathname === href ? 'text-white bg-white/10' : 'text-text-muted hover:text-white hover:bg-white/5'}`}
+                className={`px-4 py-2 font-syne font-bold text-[10px] tracking-[0.2em] uppercase transition-all
+                  ${pathname === href ? 'text-foreground' : 'text-text-muted hover:text-foreground'}`}
               >
                 {label}
               </Link>
@@ -56,8 +56,8 @@ export function Navbar() {
 
         {/* Search */}
         <div className="ml-auto relative group">
-          <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none group-focus-within:text-accent transition-colors"
-            width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+          <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none group-focus-within:text-foreground transition-colors"
+            width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
             <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
           </svg>
           <input
@@ -66,10 +66,10 @@ export function Navbar() {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             onKeyDown={handleSearch}
-            className="pl-10 pr-4 py-2 rounded-full bg-surface border border-border
+            className="pl-10 pr-4 py-2 bg-surface border border-transparent
                        outline-none text-foreground w-[140px] sm:w-[200px] md:w-[280px] transition-all duration-300
-                       focus:border-accent/50 focus:bg-background focus:w-[180px] sm:focus:w-[240px] md:focus:w-[320px] 
-                       placeholder:text-text-muted text-sm font-medium"
+                       focus:border-border focus:bg-background focus:w-[180px] sm:focus:w-[240px] md:focus:w-[320px] 
+                       placeholder:text-text-muted text-[11px] font-bold uppercase tracking-widest"
           />
         </div>
 

@@ -89,13 +89,15 @@ export async function getRecentlyUpdated(limit = 16): Promise<Manga[]> {
   return checks.filter(Boolean).slice(0, limit) as Manga[]
 }
 
-export async function searchManga(query: string, limit = 24, lang = 'en'): Promise<Manga[]> {
+export async function searchManga(query: string, limit = 24, lang = 'en', includedTags: string[] = []): Promise<Manga[]> {
   const params: Record<string, string | string[]> = {
     limit: String(limit),
     'includes[]': ['cover_art'],
     'contentRating[]': ['safe', 'suggestive'],
     'availableTranslatedLanguage[]': [lang],
-    'availableTranslatedLanguage[]': ['en'],
+  }
+  if (includedTags.length > 0) {
+    params['includedTags[]'] = includedTags
   }
   if (query.trim()) {
     params.title = query.trim()

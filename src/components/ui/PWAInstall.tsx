@@ -21,27 +21,27 @@ export function PWAInstall() {
   if (!show) return null
 
   return (
-    <div className="fixed bottom-6 left-4 right-4 z-[100] animate-fade-up">
-      <div className="max-w-md mx-auto bg-surface/90 backdrop-blur-2xl border border-white/10 p-5 rounded-[2rem] shadow-2xl flex items-center justify-between gap-6">
-        <div className="flex items-center gap-4 min-w-0">
-          <div className="w-12 h-12 bg-accent rounded-2xl flex items-center justify-center font-syne font-black text-white text-xl shadow-lg shadow-accent/20 shrink-0">
+    <div className="fixed bottom-0 left-0 right-0 z-[100] animate-fade-up">
+      <div className="bg-background border-t border-border p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-8 shadow-[0_-20px_50px_rgba(0,0,0,0.1)]">
+        <div className="flex items-center gap-6 text-center md:text-left">
+          <div className="w-14 h-14 bg-accent text-background flex items-center justify-center font-syne font-black text-2xl shrink-0">
             M
           </div>
-          <div className="min-w-0">
-            <p className="font-bold text-sm text-white truncate">Install Mangyx</p>
-            <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest truncate">Add to home screen</p>
+          <div>
+            <p className="font-syne font-bold text-sm uppercase tracking-widest text-foreground">Add to Collection</p>
+            <p className="font-cormorant text-base text-text-muted italic">Install Mangyx on your home screen for an immersive reading experience.</p>
           </div>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-4 w-full md:w-auto">
           <button 
             onClick={() => { localStorage.setItem('pwa-dismissed','1'); setShow(false) }} 
-            className="p-3 text-text-muted hover:text-white transition-colors"
+            className="flex-1 md:flex-none px-8 py-4 font-syne font-bold text-[10px] uppercase tracking-widest text-text-muted hover:text-foreground transition-colors"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            Later
           </button>
           <button 
             onClick={async () => { await prompt?.prompt(); setShow(false) }} 
-            className="bg-accent text-white px-6 py-2.5 rounded-xl font-black text-xs uppercase tracking-widest shadow-lg shadow-accent/20 hover:bg-accent-hover transition-all"
+            className="flex-1 md:flex-none btn-primary"
           >
             Install
           </button>

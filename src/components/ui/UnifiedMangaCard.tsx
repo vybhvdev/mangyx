@@ -25,18 +25,17 @@ export function UnifiedMangaCard({ manga }: Props) {
             src={imgSrc}
             alt={manga.title}
             fill
-            className="object-cover transition-transform duration-500 group-hover:scale-110"
+            className="object-cover transition-transform duration-700 group-hover:scale-105"
             sizes="(max-width: 768px) 33vw, 16vw"
           />
         )}
         {manga.source === 'consumet' && (
-          <span className="absolute top-2 left-2 px-2 py-0.5 bg-black/60 backdrop-blur-md rounded-lg text-[9px] font-bold uppercase tracking-wider text-white border border-white/10">
-            External
+          <span className="absolute top-0 left-0 px-2 py-1 bg-accent text-background text-[8px] font-bold uppercase tracking-widest">
+            EXTERNAL
           </span>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       </div>
-      <h3 className="mt-3 font-semibold text-sm line-clamp-2 text-foreground group-hover:text-accent transition-colors duration-200">
+      <h3 className="mt-4 font-syne font-bold text-xs uppercase tracking-tight leading-tight line-clamp-2 text-foreground group-hover:text-accent transition-colors duration-200">
         {manga.title}
       </h3>
     </Link>

@@ -24,25 +24,19 @@ export default async function LibraryPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 md:px-8 py-12 pb-20 animate-fade-up">
-      <div className="mb-12">
-        <span className="inline-block px-3 py-1 bg-accent/20 text-accent rounded-full text-[10px] font-bold uppercase tracking-widest mb-4">
-          Personal Collection
-        </span>
-        <h1 className="font-syne font-black text-4xl md:text-6xl text-white mb-4 tracking-tight">Your Library</h1>
-        <p className="text-text-muted text-sm md:text-base">{items.length} bookmark{items.length !== 1 ? 's' : ''} saved to your account.</p>
+      <div className="mb-16">
+        <span className="inline-block mb-4 text-[10px] font-bold uppercase tracking-[0.3em] text-text-muted">Personal Archive</span>
+        <h1 className="font-syne font-black text-4xl md:text-7xl text-foreground tracking-tight uppercase">Your Library</h1>
+        <p className="font-cormorant text-xl text-text-muted italic mt-2">{items.length} titles saved to your collection.</p>
       </div>
 
       {items.length === 0 ? (
-        <div className="py-24 text-center bg-surface/30 rounded-3xl border border-dashed border-white/5">
-          <div className="w-20 h-20 rounded-full bg-surface flex items-center justify-center text-accent mx-auto mb-6">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
-          </div>
-          <p className="text-foreground font-bold text-lg mb-2">Library is empty</p>
-          <p className="text-text-muted text-sm max-w-xs mx-auto mb-8">Browse our collection and bookmark your favorite series to keep track of them here.</p>
-          <Link href="/browse" className="btn-primary">Browse All Manga</Link>
+        <div className="py-24 text-center border border-dashed border-border">
+          <p className="text-foreground font-syne font-bold text-lg uppercase tracking-tight mb-8">Your collection is empty</p>
+          <Link href="/browse" className="btn-primary">Explore Catalog</Link>
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 md:gap-8">
           {items.map((bm) => {
             const progress = progressMap[bm.manga_id]
             return (
@@ -54,36 +48,34 @@ export default async function LibraryPage() {
                         src={bm.cover_url}
                         alt={bm.manga_title}
                         fill
-                        className="object-cover transition-transform duration-500 group-hover:scale-110"
+                        className="object-cover transition-transform duration-700 group-hover:scale-105"
                         sizes="200px"
                       />
                     )}
                     {bm.status && (
-                      <span className="absolute top-2 left-2 px-2 py-0.5 bg-black/60 backdrop-blur-md rounded-lg text-[9px] font-bold uppercase tracking-wider text-white border border-white/10">
+                      <span className="absolute top-0 left-0 bg-accent text-background text-[8px] font-bold uppercase tracking-widest px-2 py-1">
                         {bm.status}
                       </span>
                     )}
                     
-                    {/* Progress Overlay */}
                     {progress && (
                       <div className="absolute bottom-0 inset-x-0 p-2 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                        <div className="bg-accent text-white py-2 rounded-lg text-center shadow-xl">
-                          <p className="text-[10px] font-black uppercase tracking-widest">Resume ch. {progress.chapterNum}</p>
+                        <div className="bg-accent text-background py-2 text-center shadow-2xl">
+                          <p className="text-[9px] font-black uppercase tracking-widest">Resume ch. {progress.chapterNum}</p>
                         </div>
                       </div>
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   </div>
-                  <h3 className="mt-3 font-semibold text-sm line-clamp-2 text-foreground group-hover:text-accent transition-colors duration-200">
+                  <h3 className="mt-4 font-syne font-bold text-xs uppercase tracking-tight leading-tight line-clamp-2 text-foreground group-hover:text-accent transition-colors duration-200">
                     {bm.manga_title}
                   </h3>
                 </Link>
                 {progress && (
                   <div className="mt-2 flex items-center gap-2">
-                    <div className="flex-1 h-1 bg-white/5 rounded-full overflow-hidden">
-                      <div className="h-full bg-accent opacity-50" style={{ width: '100%' }} />
+                    <div className="flex-1 h-px bg-border relative">
+                      <div className="absolute top-0 left-0 h-full bg-accent" style={{ width: '100%' }} />
                     </div>
-                    <span className="text-[9px] font-bold text-text-muted uppercase tracking-widest">Ch. {progress.chapterNum}</span>
+                    <span className="text-[8px] font-bold text-text-muted uppercase tracking-widest">Ch. {progress.chapterNum}</span>
                   </div>
                 )}
               </div>
