@@ -50,177 +50,135 @@ function DrawerPortal({ open, onClose }: { open: boolean; onClose: () => void })
     router.push(`/manga/${ids[Math.floor(Math.random() * ids.length)]}`)
   }
 
-  const chevron = (expanded: boolean) => (
-    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#a89e8c" strokeWidth="2"
-      style={{ transform: expanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', flexShrink: 0 }}>
-      <polyline points="6,9 12,15 18,9"/>
-    </svg>
-  )
-
   return createPortal(
     <>
       {/* Backdrop */}
-      <div onClick={onClose} style={{
-        position: 'fixed', inset: 0, zIndex: 998,
-        background: 'rgba(17,16,16,0.45)', backdropFilter: 'blur(2px)',
-        opacity: open ? 1 : 0, pointerEvents: open ? 'auto' : 'none',
-        transition: 'opacity 0.3s ease',
-      }} />
+      <div 
+        onClick={onClose} 
+        className={`fixed inset-0 z-[998] bg-black/60 backdrop-blur-sm transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+      />
 
       {/* Drawer */}
-      <div style={{
-        position: 'fixed', top: 0, right: 0, bottom: 0, width: '300px', zIndex: 999,
-        background: '#f5f2ec', borderLeft: '1px solid #ddd9ce',
-        display: 'flex', flexDirection: 'column',
-        transform: open ? 'translateX(0)' : 'translateX(100%)',
-        transition: 'transform 0.3s cubic-bezier(0.32,0.72,0,1)',
-      }}>
+      <div className={`fixed top-0 right-0 bottom-0 w-[300px] z-[999] bg-background border-l border-white/10 flex flex-col transition-transform duration-400 cubic-bezier(0.16, 1, 0.3, 1) ${open ? 'translate-x-0' : 'translate-x-full'}`}>
 
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 1.5rem', height: '60px', borderBottom: '1px solid #ddd9ce', flexShrink: 0 }}>
-          <span style={{ fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: '1rem', letterSpacing: '0.08em', color: '#111010' }}>MANGYX</span>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#8f8270', padding: '0.25rem' }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <div className="flex items-center justify-between px-6 h-[64px] border-b border-white/5 shrink-0">
+          <span className="font-syne font-black text-lg tracking-tighter text-accent">MENU</span>
+          <button onClick={onClose} className="p-2 hover:bg-surface rounded-full transition-colors">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <path d="M18 6 6 18M6 6l12 12"/>
             </svg>
           </button>
         </div>
 
         {/* Body */}
-        <div style={{ flex: 1, overflowY: 'auto' }}>
+        <div className="flex-1 overflow-y-auto py-4 no-scrollbar">
 
           {/* Nav links */}
-          <div style={{ borderBottom: '1px solid #eeece6', padding: '0.5rem 0' }}>
+          <div className="px-3 mb-6">
             {[
-              { href: '/', label: 'Home', icon: '⌂' },
-              { href: '/browse', label: 'Browse', icon: '⊞' },
-              { href: '/library', label: 'Library', icon: '◫' },
+              { href: '/', label: 'Home', icon: <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/> },
+              { href: '/browse', label: 'Browse', icon: <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/> },
+              { href: '/library', label: 'Library', icon: <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/> },
             ].map(({ href, label, icon }) => (
-              <Link key={href} href={href} style={{
-                display: 'flex', alignItems: 'center', gap: '0.75rem',
-                padding: '0.75rem 1.5rem', textDecoration: 'none',
-                color: pathname === href ? '#111010' : '#756a5a',
-                fontFamily: 'Syne, sans-serif', fontSize: '0.9rem', fontWeight: 600,
-              }}>
-                <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.8rem', color: '#a89e8c', width: '1rem' }}>{icon}</span>
+              <Link key={href} href={href} className={`flex items-center gap-4 px-4 py-3 rounded-xl font-bold text-sm transition-all ${pathname === href ? 'text-accent bg-accent-soft' : 'text-text-muted hover:text-foreground hover:bg-surface'}`}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{icon}</svg>
                 {label}
-                {pathname === href && <span style={{ marginLeft: 'auto', width: '5px', height: '5px', background: '#111010', borderRadius: '50%' }} />}
               </Link>
             ))}
-            <button onClick={goRandom} style={{
-              width: '100%', display: 'flex', alignItems: 'center', gap: '0.75rem',
-              padding: '0.75rem 1.5rem', background: 'none', border: 'none',
-              cursor: 'pointer', color: '#756a5a', fontFamily: 'Syne, sans-serif',
-              fontSize: '0.9rem', fontWeight: 600, textAlign: 'left',
-            }}>
-              <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.8rem', color: '#a89e8c', width: '1rem' }}>⚄</span>
+            <button onClick={goRandom} className="w-full flex items-center gap-4 px-4 py-3 rounded-xl font-bold text-sm text-text-muted hover:text-foreground hover:bg-surface transition-all text-left">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 8h.01M8 8h.01M8 16h.01M16 16h.01M12 12h.01"/>
+              </svg>
               Random
             </button>
           </div>
 
-          {/* Provider */}
-          <div style={{ borderBottom: '1px solid #eeece6' }}>
-            <button onClick={() => toggle('provider')} style={{
-              width: '100%', display: 'flex', alignItems: 'center',
-              padding: '1rem 1.5rem', background: 'none', border: 'none', cursor: 'pointer',
-            }}>
-              <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.6rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#a89e8c', flex: 1, textAlign: 'left' }}>Provider</span>
-              <span style={{ fontFamily: 'Syne, sans-serif', fontSize: '0.75rem', color: '#5e5448', marginRight: '0.5rem' }}>{provider === 'mangadex' ? 'MangaDex' : 'Mangapill'}</span>
-              {chevron(expanded === 'provider')}
-            </button>
-            {expanded === 'provider' && (
-              <div style={{ padding: '0 1rem 0.75rem' }}>
-                {([
-                  { id: 'mangadex', label: 'MangaDex', desc: 'Official scanlations · English' },
-                  { id: 'mangapill', label: 'Mangapill', desc: 'Wide selection · All languages' },
-                ] as const).map(p => (
-                  <button key={p.id} onClick={() => { setProvider(p.id); setExpanded(null) }}
-                    style={{ width: '100%', textAlign: 'left', padding: '0.625rem 0.75rem', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.625rem', marginBottom: '0.25rem', background: provider === p.id ? '#111010' : 'transparent', color: provider === p.id ? '#f5f2ec' : '#5e5448', transition: 'all 0.15s' }}>
-                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: provider === p.id ? '#f5f2ec' : '#c5bfb0', flexShrink: 0 }} />
-                    <div>
-                      <p style={{ fontFamily: 'Syne, sans-serif', fontSize: '0.8rem', fontWeight: 600, margin: 0 }}>{p.label}</p>
-                      <p style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.58rem', color: provider === p.id ? '#c5bfb0' : '#a89e8c', margin: 0 }}>{p.desc}</p>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+          <div className="h-px bg-white/5 mx-6 mb-6" />
 
-          {/* Genre */}
-          <div style={{ borderBottom: '1px solid #eeece6' }}>
-            <button onClick={() => toggle('genre')} style={{
-              width: '100%', display: 'flex', alignItems: 'center',
-              padding: '1rem 1.5rem', background: 'none', border: 'none', cursor: 'pointer',
-            }}>
-              <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.6rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#a89e8c', flex: 1, textAlign: 'left' }}>Genre</span>
-              {chevron(expanded === 'genre')}
-            </button>
-            {expanded === 'genre' && (
-              <div style={{ padding: '0 1rem 1rem', display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
-                {GENRES.map(g => (
-                  <button key={g} onClick={() => { router.push(`/browse?q=${encodeURIComponent(g)}`); onClose() }}
-                    style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.58rem', letterSpacing: '0.1em', textTransform: 'uppercase', border: '1px solid #c5bfb0', color: '#756a5a', padding: '0.25rem 0.625rem', background: 'transparent', cursor: 'pointer', transition: 'all 0.15s' }}>
-                    {g}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+          {/* Expandable Sections */}
+          <div className="px-3 space-y-1">
+            {/* Provider */}
+            <div>
+              <button onClick={() => toggle('provider')} className="w-full flex items-center justify-between px-4 py-3 rounded-xl hover:bg-surface transition-all">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-text-muted">Provider</span>
+                <span className="text-xs font-bold text-accent">{provider === 'mangadex' ? 'MangaDex' : 'Mangapill'}</span>
+              </button>
+              {expanded === 'provider' && (
+                <div className="p-2 space-y-1 animate-fade-up">
+                  {([
+                    { id: 'mangadex', label: 'MangaDex', desc: 'Global Scanlations' },
+                    { id: 'mangapill', label: 'Mangapill', desc: 'Fast & Lightweight' },
+                  ] as const).map(p => (
+                    <button key={p.id} onClick={() => { setProvider(p.id); setExpanded(null) }}
+                      className={`w-full text-left p-3 rounded-xl transition-all ${provider === p.id ? 'bg-accent text-white shadow-lg shadow-accent/20' : 'bg-surface hover:bg-surface-hover text-foreground'}`}>
+                      <p className="text-sm font-bold leading-tight">{p.label}</p>
+                      <p className={`text-[10px] mt-0.5 ${provider === p.id ? 'text-white/70' : 'text-text-muted'}`}>{p.desc}</p>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
 
-          {/* Language */}
-          <div style={{ borderBottom: '1px solid #eeece6' }}>
-            <button onClick={() => toggle('language')} style={{
-              width: '100%', display: 'flex', alignItems: 'center',
-              padding: '1rem 1.5rem', background: 'none', border: 'none', cursor: 'pointer',
-            }}>
-              <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.6rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#a89e8c', flex: 1, textAlign: 'left' }}>Language</span>
-              {chevron(expanded === 'language')}
-            </button>
-            {expanded === 'language' && (
-              <div style={{ paddingBottom: '0.5rem' }}>
-                {LANGUAGES.map(l => (
-                  <button key={l.code} onClick={() => { router.push(`/browse?lang=${l.code}`); onClose() }}
-                    style={{ width: '100%', textAlign: 'left', padding: '0.625rem 1.5rem', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'Syne, sans-serif', fontSize: '0.82rem', color: '#5e5448', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    {l.label}
-                    <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.58rem', color: '#a89e8c', textTransform: 'uppercase' }}>{l.code}</span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+            {/* Genre */}
+            <div>
+              <button onClick={() => toggle('genre')} className="w-full flex items-center justify-between px-4 py-3 rounded-xl hover:bg-surface transition-all">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-text-muted">Genres</span>
+                <svg className={`transition-transform duration-200 ${expanded === 'genre' ? 'rotate-180' : ''}`} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m6 9 6 6 6-9"/></svg>
+              </button>
+              {expanded === 'genre' && (
+                <div className="p-2 flex flex-wrap gap-2 animate-fade-up">
+                  {GENRES.map(g => (
+                    <button key={g} onClick={() => { router.push(`/browse?q=${encodeURIComponent(g)}`); onClose() }}
+                      className="px-3 py-1.5 bg-surface border border-white/5 rounded-lg text-[10px] font-bold text-text-muted hover:border-accent hover:text-accent transition-all uppercase tracking-wider">
+                      {g}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
 
-          {/* International link */}
-          <div style={{ borderBottom: '1px solid #eeece6' }}>
-            <Link href="/browse?lang=international" onClick={onClose} style={{
-              display: 'flex', alignItems: 'center', gap: '0.75rem',
-              padding: '1rem 1.5rem', textDecoration: 'none',
-              color: '#756a5a', fontFamily: 'Syne, sans-serif', fontSize: '0.9rem', fontWeight: 600,
-            }}>
-              <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.8rem', color: '#a89e8c', width: '1rem' }}>⊕</span>
-              International
-            </Link>
+            {/* Language */}
+            <div>
+              <button onClick={() => toggle('language')} className="w-full flex items-center justify-between px-4 py-3 rounded-xl hover:bg-surface transition-all">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-text-muted">Languages</span>
+                <svg className={`transition-transform duration-200 ${expanded === 'language' ? 'rotate-180' : ''}`} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m6 9 6 6 6-9"/></svg>
+              </button>
+              {expanded === 'language' && (
+                <div className="p-2 grid grid-cols-2 gap-2 animate-fade-up">
+                  {LANGUAGES.map(l => (
+                    <button key={l.code} onClick={() => { router.push(`/browse?lang=${l.code}`); onClose() }}
+                      className="flex items-center justify-between px-3 py-2 bg-surface rounded-lg text-xs font-bold text-foreground hover:bg-surface-hover transition-all">
+                      {l.label}
+                      <span className="text-[10px] text-text-muted uppercase">{l.code}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
         </div>
 
         {/* Footer */}
-        <div style={{ flexShrink: 0, borderTop: '1px solid #ddd9ce', padding: '1rem 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div className="p-6 border-t border-white/5 bg-surface/30">
           {session ? (
-            <div>
-              <p style={{ fontFamily: 'Syne, sans-serif', fontSize: '0.8rem', fontWeight: 600, color: '#111010', margin: 0 }}>{session.user?.name}</p>
-              <button onClick={() => signOut({ callbackUrl: '/' })} style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.58rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#a89e8c', background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginTop: '0.2rem' }}>
-                Sign out
-              </button>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-bold text-foreground leading-none">{session.user?.name}</p>
+                <button onClick={() => signOut({ callbackUrl: '/' })} className="text-[10px] font-bold text-accent uppercase tracking-widest mt-2 hover:text-accent-hover transition-colors">
+                  Sign out
+                </button>
+              </div>
+              <div className="w-10 h-10 rounded-full bg-accent flex items-center justify-center font-bold text-white shadow-lg shadow-accent/20">
+                {session.user?.name?.slice(0, 1).toUpperCase()}
+              </div>
             </div>
           ) : (
-            <Link href="/auth/signin" style={{ fontFamily: 'Syne, sans-serif', fontSize: '0.82rem', color: '#756a5a', textDecoration: 'none' }}>
+            <Link href="/auth/signin" className="btn-primary w-full text-center">
               Sign in
             </Link>
           )}
-          <Link href="/info" style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.58rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#a89e8c', textDecoration: 'none' }}>
-            Info
-          </Link>
         </div>
       </div>
     </>,
@@ -236,11 +194,14 @@ export function NavDrawer() {
 
   return (
     <>
-      <button onClick={() => setOpen(true)} aria-label="Open menu"
-        style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'flex-end', gap: '5px', width: '36px', height: '36px', background: 'transparent', border: 'none', cursor: 'pointer', padding: '6px' }}>
-        <span style={{ display: 'block', height: '1.5px', width: '20px', background: '#111010' }} />
-        <span style={{ display: 'block', height: '1.5px', width: '14px', background: '#111010' }} />
-        <span style={{ display: 'block', height: '1.5px', width: '17px', background: '#111010' }} />
+      <button 
+        onClick={() => setOpen(true)} 
+        aria-label="Open menu"
+        className="flex flex-col justify-center items-end gap-1.5 w-10 h-10 hover:bg-surface rounded-full transition-all p-2.5 group"
+      >
+        <span className="block h-0.5 w-5 bg-foreground group-hover:bg-accent transition-colors" />
+        <span className="block h-0.5 w-3 bg-foreground group-hover:bg-accent transition-colors" />
+        <span className="block h-0.5 w-4 bg-foreground group-hover:bg-accent transition-colors" />
       </button>
       {mounted && <DrawerPortal open={open} onClose={() => setOpen(false)} />}
     </>

@@ -38,42 +38,46 @@ export function BrowseClient({ tags }: Props) {
   const featuredTags = tags.filter((t) => FEATURED_GENRES.includes(t.name))
 
   return (
-    <div className="mb-8">
+    <div className="mb-12 space-y-8 animate-fade-up">
       {/* Search */}
-      <form onSubmit={submitSearch} className="flex max-w-[480px] mb-5">
+      <form onSubmit={submitSearch} className="relative max-w-xl group">
+        <svg className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-accent transition-colors"
+          width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
         <input
           type="text"
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Search by title…"
-          className="flex-1 border border-ink-300 px-4 py-3.5 font-cormorant text-base outline-none
-                     bg-paper text-ink-950 transition-colors focus:border-onyx placeholder:text-ink-400"
+          placeholder="Search by title, artist, or tag…"
+          className="w-full bg-surface border border-border pl-12 pr-24 py-4 rounded-2xl
+                     text-foreground outline-none transition-all duration-300
+                     focus:border-accent/50 focus:bg-background placeholder:text-text-muted"
         />
         <button
           type="submit"
-          className="bg-onyx text-paper border-none px-6 cursor-pointer hover:bg-ink-900 transition-colors"
+          className="absolute right-2 top-2 bottom-2 bg-accent text-white px-6 rounded-xl
+                     font-bold text-xs uppercase tracking-widest hover:bg-accent-hover transition-all"
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-          </svg>
+          Search
         </button>
       </form>
 
       {/* Genre chips */}
-      <div className="flex gap-2 flex-wrap">
+      <div className="flex gap-2 overflow-x-auto pb-4 no-scrollbar -mx-4 px-4 md:mx-0 md:px-0 flex-wrap">
         <button
           onClick={() => setTag('')}
-          className={`font-mono text-[0.65rem] tracking-[0.12em] uppercase border px-3.5 py-1.5 cursor-pointer transition-all
-            ${!activeTag ? 'bg-onyx text-paper border-onyx' : 'border-ink-200 text-ink-500 bg-transparent hover:bg-ink-100'}`}
+          className={`px-5 py-2.5 rounded-full text-[11px] font-bold uppercase tracking-widest border transition-all whitespace-nowrap
+            ${!activeTag ? 'bg-accent border-accent text-white shadow-lg shadow-accent/20' : 'bg-surface border-border text-text-muted hover:border-accent hover:text-accent'}`}
         >
-          All
+          All Genres
         </button>
         {featuredTags.map((tag) => (
           <button
             key={tag.id}
             onClick={() => setTag(tag.id)}
-            className={`font-mono text-[0.65rem] tracking-[0.12em] uppercase border px-3.5 py-1.5 cursor-pointer transition-all
-              ${activeTag === tag.id ? 'bg-onyx text-paper border-onyx' : 'border-ink-200 text-ink-500 bg-transparent hover:bg-ink-100'}`}
+            className={`px-5 py-2.5 rounded-full text-[11px] font-bold uppercase tracking-widest border transition-all whitespace-nowrap
+              ${activeTag === tag.id ? 'bg-accent border-accent text-white shadow-lg shadow-accent/20' : 'bg-surface border-border text-text-muted hover:border-accent hover:text-accent'}`}
           >
             {tag.name}
           </button>

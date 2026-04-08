@@ -23,49 +23,68 @@ export default async function LibraryPage() {
   )
 
   return (
-    <div className="max-w-[1200px] mx-auto px-8 py-12 pb-16 animate-fade-up">
-      <h1 className="font-syne font-black text-[2.5rem] tracking-[-0.02em] mb-1">Library</h1>
-      <p className="label-mono mb-10">{items.length} bookmark{items.length !== 1 ? 's' : ''}</p>
+    <div className="max-w-7xl mx-auto px-4 md:px-8 py-12 pb-20 animate-fade-up">
+      <div className="mb-12">
+        <span className="inline-block px-3 py-1 bg-accent/20 text-accent rounded-full text-[10px] font-bold uppercase tracking-widest mb-4">
+          Personal Collection
+        </span>
+        <h1 className="font-syne font-black text-4xl md:text-6xl text-white mb-4 tracking-tight">Your Library</h1>
+        <p className="text-text-muted text-sm md:text-base">{items.length} bookmark{items.length !== 1 ? 's' : ''} saved to your account.</p>
+      </div>
 
       {items.length === 0 ? (
-        <div className="py-20 text-center border border-dashed border-ink-200">
-          <p className="font-cormorant text-[1.1rem] text-ink-500 mb-6">
-            Your library is empty. Browse and bookmark manga to see them here.
-          </p>
-          <Link href="/browse" className="btn-primary">Browse Manga</Link>
+        <div className="py-24 text-center bg-surface/30 rounded-3xl border border-dashed border-white/5">
+          <div className="w-20 h-20 rounded-full bg-surface flex items-center justify-center text-accent mx-auto mb-6">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
+          </div>
+          <p className="text-foreground font-bold text-lg mb-2">Library is empty</p>
+          <p className="text-text-muted text-sm max-w-xs mx-auto mb-8">Browse our collection and bookmark your favorite series to keep track of them here.</p>
+          <Link href="/browse" className="btn-primary">Browse All Manga</Link>
         </div>
       ) : (
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6">
           {items.map((bm) => {
             const progress = progressMap[bm.manga_id]
             return (
-              <div key={bm.id} className="group relative">
-                <Link href={`/manga/${bm.manga_id}`} className="no-underline block">
-                  <div className="relative aspect-[3/4] overflow-hidden bg-ink-200">
+              <div key={bm.id} className="group flex flex-col animate-fade-up">
+                <Link href={`/manga/${bm.manga_id}`} className="block">
+                  <div className="card-3-4">
                     {bm.cover_url && (
                       <Image
                         src={bm.cover_url}
                         alt={bm.manga_title}
                         fill
-                        className="object-cover transition-transform duration-400 group-hover:scale-[1.04]"
+                        className="object-cover transition-transform duration-500 group-hover:scale-110"
                         sizes="200px"
                       />
                     )}
                     {bm.status && (
-                      <span className="absolute top-1.5 left-1.5 bg-paper/90 font-mono text-[9px] tracking-[0.15em] uppercase text-ink-700 px-1.5 py-0.5">
+                      <span className="absolute top-2 left-2 px-2 py-0.5 bg-black/60 backdrop-blur-md rounded-lg text-[9px] font-bold uppercase tracking-wider text-white border border-white/10">
                         {bm.status}
                       </span>
                     )}
+                    
+                    {/* Progress Overlay */}
+                    {progress && (
+                      <div className="absolute bottom-0 inset-x-0 p-2 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                        <div className="bg-accent text-white py-2 rounded-lg text-center shadow-xl">
+                          <p className="text-[10px] font-black uppercase tracking-widest">Resume ch. {progress.chapterNum}</p>
+                        </div>
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   </div>
-                  <p className="card-title group-hover:text-ink-600">{bm.manga_title}</p>
+                  <h3 className="mt-3 font-semibold text-sm line-clamp-2 text-foreground group-hover:text-accent transition-colors duration-200">
+                    {bm.manga_title}
+                  </h3>
                 </Link>
                 {progress && (
-                  <a
-                    href={`/reader/${progress.chapterId}?manga=${bm.manga_id}`}
-                    className="absolute bottom-6 left-0 right-0 bg-onyx/90 font-mono text-[9px] tracking-[0.12em] uppercase text-paper px-1.5 py-1 text-center hover:bg-onyx transition-colors no-underline"
-                  >
-                    Ch. {progress.chapterNum} →
-                  </a>
+                  <div className="mt-2 flex items-center gap-2">
+                    <div className="flex-1 h-1 bg-white/5 rounded-full overflow-hidden">
+                      <div className="h-full bg-accent opacity-50" style={{ width: '100%' }} />
+                    </div>
+                    <span className="text-[9px] font-bold text-text-muted uppercase tracking-widest">Ch. {progress.chapterNum}</span>
+                  </div>
                 )}
               </div>
             )

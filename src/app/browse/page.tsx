@@ -19,13 +19,15 @@ export default async function BrowsePage({ searchParams }: Props) {
   if (lang === 'international') {
     const manga = await getInternationalManga(48)
     return (
-      <div className="max-w-[1200px] mx-auto px-4 md:px-8 py-10">
-        <div className="mb-8">
-          <p className="font-mono text-[0.65rem] tracking-[0.25em] uppercase text-ink-400 mb-2">Browse</p>
-          <h1 className="font-syne font-black text-[2.5rem] tracking-[-0.02em]">International</h1>
-          <p className="font-cormorant text-[1rem] text-ink-500 mt-1">Popular titles in their original language</p>
+      <div className="max-w-7xl mx-auto px-4 md:px-8 py-12">
+        <div className="mb-12 animate-fade-up">
+          <span className="inline-block px-3 py-1 bg-accent/20 text-accent rounded-full text-[10px] font-bold uppercase tracking-widest mb-4">
+            Global Collection
+          </span>
+          <h1 className="font-syne font-black text-4xl md:text-6xl text-white mb-4 tracking-tight">International</h1>
+          <p className="text-text-muted text-sm md:text-base max-w-lg">Popular titles in their original Japanese, Korean, and Chinese editions.</p>
         </div>
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3 md:gap-5">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6">
           {manga.map((m) => <MangaCard key={m.id} manga={m} showLangBadge />)}
         </div>
       </div>
@@ -43,20 +45,22 @@ export default async function BrowsePage({ searchParams }: Props) {
     }))
 
     return (
-      <div className="max-w-[1200px] mx-auto px-4 md:px-8 py-10">
-        <div className="mb-8">
-          <p className="font-mono text-[0.65rem] tracking-[0.25em] uppercase text-ink-400 mb-2">
-            Mangapill · Browse
-          </p>
-          <h1 className="font-syne font-black text-[2.5rem] tracking-[-0.02em]">
-            {q ? `"${q}"` : 'All Manga'}
+      <div className="max-w-7xl mx-auto px-4 md:px-8 py-12">
+        <div className="mb-12 animate-fade-up">
+          <span className="inline-block px-3 py-1 bg-white/5 text-white/60 rounded-full text-[10px] font-bold uppercase tracking-widest border border-white/10 mb-4">
+            Mangapill Provider
+          </span>
+          <h1 className="font-syne font-black text-4xl md:text-6xl text-white mb-4 tracking-tight">
+            {q ? `Results for "${q}"` : 'Discover Manga'}
           </h1>
         </div>
         <BrowseClient tags={[]} />
         {results.length === 0 ? (
-          <p className="font-mono text-[0.65rem] tracking-[0.2em] uppercase text-ink-400 mt-12">No results found.</p>
+          <div className="p-20 text-center bg-surface/30 rounded-3xl border border-dashed border-white/5 mt-8">
+            <p className="text-text-muted font-bold text-sm uppercase tracking-widest">No results found for your search.</p>
+          </div>
         ) : (
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3 md:gap-5 mt-8">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6 mt-12">
             {results.map((m) => <UnifiedMangaCard key={m.id} manga={m} />)}
           </div>
         )}
@@ -69,20 +73,22 @@ export default async function BrowsePage({ searchParams }: Props) {
   const manga = await mdSearch(q, 24).catch(() => [])
 
   return (
-    <div className="max-w-[1200px] mx-auto px-4 md:px-8 py-10">
-      <div className="mb-8">
-        <p className="font-mono text-[0.65rem] tracking-[0.25em] uppercase text-ink-400 mb-2">
-          MangaDex · Browse
-        </p>
-        <h1 className="font-syne font-black text-[2.5rem] tracking-[-0.02em]">
-          {q ? `"${q}"` : 'All Manga'}
+    <div className="max-w-7xl mx-auto px-4 md:px-8 py-12">
+      <div className="mb-12 animate-fade-up">
+        <span className="inline-block px-3 py-1 bg-white/5 text-white/60 rounded-full text-[10px] font-bold uppercase tracking-widest border border-white/10 mb-4">
+          MangaDex Provider
+        </span>
+        <h1 className="font-syne font-black text-4xl md:text-6xl text-white mb-4 tracking-tight">
+          {q ? `Results for "${q}"` : 'Library Explorer'}
         </h1>
       </div>
       <BrowseClient tags={tags} />
       {manga.length === 0 ? (
-        <p className="font-mono text-[0.65rem] tracking-[0.2em] uppercase text-ink-400 mt-12">No results found.</p>
+        <div className="p-20 text-center bg-surface/30 rounded-3xl border border-dashed border-white/5 mt-8">
+          <p className="text-text-muted font-bold text-sm uppercase tracking-widest">No series found matching your criteria.</p>
+        </div>
       ) : (
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3 md:gap-5 mt-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6 mt-12">
           {manga.map((m) => <MangaCard key={m.id} manga={m} />)}
         </div>
       )}

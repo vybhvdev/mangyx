@@ -38,47 +38,57 @@ export function SignUpForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-      <div>
-        <label className="label-mono block mb-1.5">Username</label>
+    <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+      <div className="space-y-2">
+        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-text-muted ml-4">Public Username</label>
         <input
           type="text" required minLength={2} maxLength={24}
           value={username} onChange={(e) => setUsername(e.target.value)}
-          placeholder="mangareader"
-          className="w-full border border-ink-300 px-4 py-3 font-cormorant text-base outline-none
-                     bg-paper text-ink-950 transition-colors focus:border-onyx placeholder:text-ink-400"
+          placeholder="e.g. mangafan"
+          className="w-full bg-surface border border-border px-6 py-4 rounded-2xl
+                     text-foreground outline-none transition-all duration-300
+                     focus:border-accent/50 focus:bg-background placeholder:text-text-muted/50"
         />
       </div>
-      <div>
-        <label className="label-mono block mb-1.5">Email</label>
+      <div className="space-y-2">
+        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-text-muted ml-4">Email Address</label>
         <input
           type="email" required autoComplete="email"
           value={email} onChange={(e) => setEmail(e.target.value)}
           placeholder="you@example.com"
-          className="w-full border border-ink-300 px-4 py-3 font-cormorant text-base outline-none
-                     bg-paper text-ink-950 transition-colors focus:border-onyx placeholder:text-ink-400"
+          className="w-full bg-surface border border-border px-6 py-4 rounded-2xl
+                     text-foreground outline-none transition-all duration-300
+                     focus:border-accent/50 focus:bg-background placeholder:text-text-muted/50"
         />
       </div>
-      <div>
-        <label className="label-mono block mb-1.5">Password</label>
+      <div className="space-y-2">
+        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-text-muted ml-4">Secure Password</label>
         <input
           type="password" required minLength={8} autoComplete="new-password"
           value={password} onChange={(e) => setPassword(e.target.value)}
           placeholder="Min. 8 characters"
-          className="w-full border border-ink-300 px-4 py-3 font-cormorant text-base outline-none
-                     bg-paper text-ink-950 transition-colors focus:border-onyx placeholder:text-ink-400"
+          className="w-full bg-surface border border-border px-6 py-4 rounded-2xl
+                     text-foreground outline-none transition-all duration-300
+                     focus:border-accent/50 focus:bg-background placeholder:text-text-muted/50"
         />
       </div>
 
       {error && (
-        <p className="font-mono text-[0.65rem] tracking-[0.1em] text-red-700">{error}</p>
+        <div className="px-4 py-3 bg-accent/10 border border-accent/20 rounded-xl">
+          <p className="text-xs font-bold text-accent text-center">{error}</p>
+        </div>
       )}
 
       <button
         type="submit" disabled={loading}
-        className="btn-primary text-center w-full mt-1 disabled:opacity-60"
+        className="btn-primary w-full py-4 text-sm uppercase tracking-widest mt-2 disabled:opacity-50"
       >
-        {loading ? 'Creating account…' : 'Create Account'}
+        {loading ? (
+          <div className="flex items-center gap-3">
+            <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+            <span>Creating Account...</span>
+          </div>
+        ) : 'Create Account'}
       </button>
     </form>
   )

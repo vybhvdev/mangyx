@@ -18,26 +18,27 @@ export function UnifiedMangaCard({ manga }: Props) {
     : manga.coverUrl
 
   return (
-    <Link href={href} className="group cursor-pointer no-underline">
-      <div className="relative aspect-[3/4] overflow-hidden bg-ink-200 mb-2">
+    <Link href={href} className="group block animate-fade-up">
+      <div className="card-3-4">
         {imgSrc && (
           <Image
             src={imgSrc}
             alt={manga.title}
             fill
-            className="object-cover transition-transform duration-300 group-hover:scale-[1.04]"
+            className="object-cover transition-transform duration-500 group-hover:scale-110"
             sizes="(max-width: 768px) 33vw, 16vw"
           />
         )}
         {manga.source === 'consumet' && (
-          <span className="absolute top-1.5 left-1.5 bg-paper/90 text-ink-700 font-mono text-[8px] tracking-[0.1em] uppercase px-1.5 py-0.5">
-            Alt
+          <span className="absolute top-2 left-2 px-2 py-0.5 bg-black/60 backdrop-blur-md rounded-lg text-[9px] font-bold uppercase tracking-wider text-white border border-white/10">
+            External
           </span>
         )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       </div>
-      <p className="font-syne text-[0.78rem] font-semibold text-onyx leading-snug line-clamp-2 group-hover:text-ink-600 transition-colors">
+      <h3 className="mt-3 font-semibold text-sm line-clamp-2 text-foreground group-hover:text-accent transition-colors duration-200">
         {manga.title}
-      </p>
+      </h3>
     </Link>
   )
 }

@@ -15,45 +15,55 @@ export function MangaCard({ manga, priority = false, showLangBadge = false }: Pr
   const status = manga.attributes?.status
 
   return (
-    <Link href={`/manga/${manga.id}`} className="group cursor-pointer no-underline">
-      <div className="relative overflow-hidden bg-ink-200 aspect-[3/4]">
+    <Link href={`/manga/${manga.id}`} className="group block animate-fade-up">
+      <div className="card-3-4">
         {cover ? (
           <Image
             src={cover}
             alt={title}
             fill
             sizes="(max-width: 768px) 33vw, (max-width: 1200px) 16vw, 200px"
-            className="object-cover transition-transform duration-400 ease-out group-hover:scale-[1.04]"
+            className="object-cover transition-transform duration-500 group-hover:scale-110"
             priority={priority}
           />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center bg-ink-200">
-            <span className="font-syne font-black text-[1.5rem] text-ink-400 text-center px-2 leading-tight">
-              {title.slice(0, 2).toUpperCase()}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="font-syne font-bold text-2xl text-text-muted opacity-50">
+              {title.slice(0, 1).toUpperCase()}
             </span>
           </div>
         )}
-        {showLangBadge && manga.attributes?.originalLanguage && (
-          <span className="absolute top-1.5 right-1.5 bg-onyx text-paper font-mono text-[8px] tracking-[0.1em] uppercase px-1.5 py-0.5 z-10">
-            {manga.attributes.originalLanguage}
-          </span>
-        )}
-        {status && (
-          <span className="absolute top-1.5 left-1.5 bg-paper/90 text-ink-700 font-mono text-[9px] tracking-[0.15em] uppercase px-1.5 py-0.5">
-            {status}
-          </span>
-        )}
+        
+        {/* Badges */}
+        <div className="absolute top-2 inset-x-2 flex justify-between items-start pointer-events-none">
+          {status && (
+            <span className="px-2 py-0.5 bg-black/60 backdrop-blur-md rounded-lg text-[9px] font-bold uppercase tracking-wider text-white border border-white/10">
+              {status}
+            </span>
+          )}
+          {showLangBadge && manga.attributes?.originalLanguage && (
+            <span className="px-2 py-0.5 bg-accent/90 backdrop-blur-md rounded-lg text-[9px] font-bold uppercase tracking-wider text-white ml-auto">
+              {manga.attributes.originalLanguage}
+            </span>
+          )}
+        </div>
+
+        {/* Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       </div>
-      <p className="card-title group-hover:text-ink-600">{title}</p>
+      <h3 className="mt-3 font-semibold text-sm line-clamp-2 text-foreground group-hover:text-accent transition-colors duration-200">
+        {title}
+      </h3>
     </Link>
   )
 }
 
 export function MangaCardSkeleton() {
   return (
-    <div>
-      <div className="skeleton aspect-[3/4]" />
-      <div className="skeleton h-3.5 mt-2 w-4/5" />
+    <div className="animate-pulse">
+      <div className="card-3-4 skeleton" />
+      <div className="h-4 mt-3 bg-surface rounded-full w-4/5" />
+      <div className="h-3 mt-2 bg-surface rounded-full w-2/3 opacity-50" />
     </div>
   )
 }
