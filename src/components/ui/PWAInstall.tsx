@@ -1,33 +1,51 @@
 'use client'
-import { useEffect, useState } from 'react'
-interface BeforeInstallPromptEvent extends Event {
-  prompt: () => Promise<void>
-  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>
-}
+
+import { useState, useEffect } from 'react'
+
 export function PWAInstall() {
-  const [prompt, setPrompt] = useState<BeforeInstallPromptEvent | null>(null)
+  const [prompt, setPrompt] = useState<any>(null)
   const [show, setShow] = useState(false)
+
   useEffect(() => {
-    if (window.matchMedia('(display-mode: standalone)').matches) return
-    if (localStorage.getItem('pwa-dismissed')) return
-    const handler = (e: Event) => {
+    const handler = (e: any) => {
       e.preventDefault()
-      setPrompt(e as BeforeInstallPromptEvent)
-      setTimeout(() => setShow(true), 3000)
+      setPrompt(e)
+      if (!localStorage.getItem('pwa-dismissed')) {
+        setShow(true)
+      }
     }
     window.addEventListener('beforeinstallprompt', handler)
     return () => window.removeEventListener('beforeinstallprompt', handler)
   }, [])
+
   if (!show) return null
+
   return (
-    <div className="fixed bottom-4 left-4 right-4 z-50 bg-onyx text-paper p-4 flex items-center justify-between gap-4">
-      <div>
-        <p className="font-syne font-bold text-sm">Install Mangyx</p>
-        <p className="font-mono text-[0.6rem] tracking-[0.1em] text-ink-300 mt-0.5">Add to home screen for the best experience</p>
-      </div>
-      <div className="flex gap-3 shrink-0">
-        <button onClick={() => { localStorage.setItem('pwa-dismissed','1'); setShow(false) }} className="font-mono text-[0.6rem] uppercase text-ink-400 bg-transparent border-none cursor-pointer">Later</button>
-        <button onClick={async () => { await prompt?.prompt(); setShow(false) }} className="font-syne text-[0.7rem] uppercase bg-paper text-onyx px-3 py-1.5 border-none cursor-pointer">Install</button>
+    <div className="fixed bottom-6 left-4 right-4 z-[100] animate-fade-up">
+      <div className="max-w-md mx-auto bg-surface/90 backdrop-blur-2xl border border-white/10 p-5 rounded-[2rem] shadow-2xl flex items-center justify-between gap-6">
+        <div className="flex items-center gap-4 min-w-0">
+          <div className="w-12 h-12 bg-accent rounded-2xl flex items-center justify-center font-syne font-black text-white text-xl shadow-lg shadow-accent/20 shrink-0">
+            M
+          </div>
+          <div className="min-w-0">
+            <p className="font-bold text-sm text-white truncate">Install Mangyx</p>
+            <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest truncate">Add to home screen</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <button 
+            onClick={() => { localStorage.setItem('pwa-dismissed','1'); setShow(false) }} 
+            className="p-3 text-text-muted hover:text-white transition-colors"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+          <button 
+            onClick={async () => { await prompt?.prompt(); setShow(false) }} 
+            className="bg-accent text-white px-6 py-2.5 rounded-xl font-black text-xs uppercase tracking-widest shadow-lg shadow-accent/20 hover:bg-accent-hover transition-all"
+          >
+            Install
+          </button>
+        </div>
       </div>
     </div>
   )
